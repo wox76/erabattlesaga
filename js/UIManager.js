@@ -13,11 +13,42 @@ export class UIManager {
     }
 
     init() {
-        this.showSelectionScreen();
+        this.showTitleScreen();
     }
 
     clear() {
         this.container.innerHTML = '';
+    }
+
+    showTitleScreen() {
+        this.clear();
+        this.currentScreen = 'title';
+        this.container.style.pointerEvents = 'auto';
+
+        const screen = document.createElement('div');
+        screen.className = 'title-screen';
+
+        const logo = document.createElement('img');
+        logo.src = 'assets/LOGO.png';
+        logo.className = 'game-logo';
+        logo.alt = 'Era Total War Saga';
+
+        const startBtn = document.createElement('button');
+        startBtn.className = 'start-game-btn';
+        startBtn.textContent = 'START';
+        startBtn.onclick = () => {
+            // Try to go full screen
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(e => {
+                    console.log("Fullscreen denied", e);
+                });
+            }
+            this.showSelectionScreen();
+        };
+
+        screen.appendChild(logo);
+        screen.appendChild(startBtn);
+        this.container.appendChild(screen);
     }
 
     showSelectionScreen() {
