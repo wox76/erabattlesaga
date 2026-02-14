@@ -29,7 +29,7 @@ export class UIManager {
         screen.className = 'title-screen';
 
         const logo = document.createElement('img');
-        logo.src = 'assets/LOGO.png';
+        logo.src = 'assets/logo.png';
         logo.className = 'game-logo';
         logo.alt = 'Era Total War Saga';
 
