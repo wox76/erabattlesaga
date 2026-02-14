@@ -1,0 +1,40 @@
+import { GameManager } from './GameManager.js';
+import { SceneManager } from './SceneManager.js';
+import { UIManager } from './UIManager.js';
+
+window.addEventListener('DOMContentLoaded', () => {
+    // Canvas
+    const canvas = document.getElementById('game-canvas');
+
+    // Core Systems
+    const sceneManager = new SceneManager(canvas);
+    const gameManager = new GameManager();
+
+    // Pass gameManager to UI (already correct)
+    const uiManager = new UIManager(gameManager);
+
+    // Hook up Interaction
+    sceneManager.onBuildingClick = (buildingId) => {
+        gameManager.speedUpBuilding(buildingId);
+    };
+
+    // Hook up Game Events to Scene
+    gameManager.subscribe(() => {
+        const gameBuildings = gameManager.buildings;
+
+        gameBuildings.forEach(b => {
+            // Check if scene has this building
+            let mesh = sceneManager.buildingMeshes.find(m => m.userData.id === b.id);
+
+            if (!mesh) {
+                // Add new building
+                sceneManager.addBuilding(b);
+            } else {
+                // Update visual state (e.g. constructing -> active)
+                sceneManager.updateBuildingStatus(b.id, b.status);
+            }
+        });
+    });
+
+    console.log("City Administration Game Initialized");
+});
