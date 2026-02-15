@@ -32,6 +32,21 @@ A strategic city-building game where you manage resources, construct buildings, 
 - **Three.js** (3D Rendering)
 - **HTML5 & CSS3**
 
+## 🚀 Recent Updates (v2.0 Visual Overhaul)
+
+- **🎨 Visual Enhancements**: 
+    - Buildings now spawn with vibrant **pastel colors**.
+    - As buildings level up, their colors become more **saturated and intense**, reflecting their growth!
+- **⚔️ RPG Awesome Icons**: 
+    - Completely replaced emoji placeholders with professional **RPG Awesome** vector icons.
+    - **Colored Resource Icons**: Gold for Solidi, Burlywood for Wood, Silver for Stone, Blue for Iron, Red for Food.
+- **🏰 General Profile**: 
+    - Click your General's portrait to view detailed stats (XP, Level).
+    - Fully iconized Equipment Slots (Weapon, Shield, Helmet, etc.).
+- **🔍 Improved UI**:
+    - **Scout Panel**: Compact design with clear resource targets (🌲, 🪨, 💎).
+    - **Building Menu**: Large, representative icons for every structure (❤️ House, 🪵 Market, ⚔️ Barracks).
+
 ---
 
 *Developed by wox76*
