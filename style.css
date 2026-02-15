@@ -897,3 +897,24 @@ html {
 .close-btn:hover {
     background: #666;
 }
+
+/* Resource Colors */
+.icon-solidi {
+    color: #ffd700 !important;
+}
+
+.icon-wood {
+    color: #deb887 !important;
+}
+
+.icon-stone {
+    color: #d3d3d3 !important;
+}
+
+.icon-iron {
+    color: #87cefa !important;
+}
+
+.icon-food {
+    color: #ff6347 !important;
+}

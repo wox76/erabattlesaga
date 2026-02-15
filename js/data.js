@@ -89,7 +89,8 @@ export const BUILDINGS = {
         color: 0xff6961, // Pastel Red
         width: 2,
         depth: 2,
-        buildTime: 0 // Instant
+        buildTime: 0, // Instant
+        icon: 'ra ra-tower'
     },
     house: {
         id: 'house',
@@ -100,7 +101,8 @@ export const BUILDINGS = {
         color: 0x77dd77, // Pastel Green
         width: 1,
         depth: 1,
-        buildTime: 5000
+        buildTime: 5000,
+        icon: 'ra ra-health'
     },
     woodcutter: {
         id: 'woodcutter',
@@ -111,7 +113,8 @@ export const BUILDINGS = {
         color: 0xC2B280, // Sand/Wood (Pastel Brown)
         width: 1,
         depth: 1,
-        buildTime: 5000
+        buildTime: 5000,
+        icon: 'ra ra-axe'
     },
     quarry: {
         id: 'quarry',
@@ -122,7 +125,8 @@ export const BUILDINGS = {
         color: 0xcfcfc4, // Pastel Gray
         width: 1,
         depth: 1,
-        buildTime: 8000
+        buildTime: 8000,
+        icon: 'ra ra-hammer'
     },
     mine: {
         id: 'mine',
@@ -133,7 +137,8 @@ export const BUILDINGS = {
         color: 0x708090, // SlateGray (Kept generic, but lighter)
         width: 1,
         depth: 1,
-        buildTime: 10000
+        buildTime: 10000,
+        icon: 'ra ra-mine-wagon'
     },
     farm: {
         id: 'farm',
@@ -144,7 +149,8 @@ export const BUILDINGS = {
         color: 0xfdfd96, // Pastel Yellow
         width: 1,
         depth: 1,
-        buildTime: 5000
+        buildTime: 5000,
+        icon: 'ra ra-scythe'
     },
     market: {
         id: 'market',
@@ -155,7 +161,8 @@ export const BUILDINGS = {
         color: 0xffb347, // Pastel Orange
         width: 1,
         depth: 1,
-        buildTime: 8000
+        buildTime: 8000,
+        icon: 'ra ra-wooden-sign'
     },
     barracks: {
         id: 'barracks',
@@ -166,7 +173,8 @@ export const BUILDINGS = {
         color: 0xaec6cf, // Pastel Blue
         width: 2,
         depth: 1,
-        buildTime: 15000
+        buildTime: 15000,
+        icon: 'ra ra-crossed-swords'
     },
     temple: {
         id: 'temple',
@@ -177,7 +185,8 @@ export const BUILDINGS = {
         color: 0xffffff, // White
         width: 2,
         depth: 2,
-        buildTime: 20000
+        buildTime: 20000,
+        icon: 'ra ra-sun-symbol'
     },
     colosseum: {
         id: 'colosseum',
@@ -188,7 +197,8 @@ export const BUILDINGS = {
         color: 0xdda0dd, // Plum (Pastel Purple)
         width: 3,
         depth: 3,
-        buildTime: 30000
+        buildTime: 30000,
+        icon: 'ra ra-round-shield'
     }
 };
 
@@ -263,7 +273,7 @@ export const EXPLORATION_TYPES = {
     wood: {
         id: 'wood',
         name: 'Search for Wood',
-        icon: '🌲',
+        icon: 'ra ra-pine-tree',
         cost: 50,
         time: 5000, // 5 seconds
         risk: 0.1, // 10% fail
@@ -273,7 +283,7 @@ export const EXPLORATION_TYPES = {
     stone: {
         id: 'stone',
         name: 'Search for Stone',
-        icon: '🪨',
+        icon: 'ra ra-cubes',
         cost: 80,
         time: 8000,
         risk: 0.2,
@@ -283,7 +293,7 @@ export const EXPLORATION_TYPES = {
     iron: {
         id: 'iron',
         name: 'Search for Iron',
-        icon: '⛏️',
+        icon: 'ra ra-mining-diamonds',
         cost: 120,
         time: 12000,
         risk: 0.3,

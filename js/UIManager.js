@@ -308,8 +308,8 @@ export class UIManager {
             btn.className = 'explore-btn';
             btn.id = `explore-${type.id}`;
             btn.innerHTML = `
-                <div class="explore-icon">${type.icon}</div>
-                <div class="explore-cost">${type.cost}</div>
+                <div class="explore-icon"><i class="${type.icon} icon-${type.id}"></i></div>
+                <div class="explore-cost"><i class="ra ra-gold-bar icon-solidi"></i> ${type.cost}</div>
             `;
             btn.onclick = () => this.gameManager.sendExplorer(type.id);
             explorationPanel.appendChild(btn);
@@ -340,13 +340,14 @@ export class UIManager {
             };
 
             let costStr = '';
-            if (b.cost.solidi) costStr += `<div class="cost-item">💰 ${b.cost.solidi}</div>`;
-            if (b.cost.wood) costStr += `<div class="cost-item">🌲 ${b.cost.wood}</div>`;
-            if (b.cost.stone) costStr += `<div class="cost-item">🪨 ${b.cost.stone}</div>`;
-            if (b.cost.iron) costStr += `<div class="cost-item">⛏️ ${b.cost.iron}</div>`;
+            if (b.cost.solidi) costStr += `<div class="cost-item"><i class="ra ra-gold-bar icon-solidi"></i> ${b.cost.solidi}</div>`;
+            if (b.cost.wood) costStr += `<div class="cost-item"><i class="ra ra-pine-tree icon-wood"></i> ${b.cost.wood}</div>`;
+            if (b.cost.stone) costStr += `<div class="cost-item"><i class="ra ra-cubes icon-stone"></i> ${b.cost.stone}</div>`;
+            if (b.cost.iron) costStr += `<div class="cost-item"><i class="ra ra-mining-diamonds icon-iron"></i> ${b.cost.iron}</div>`;
 
             btn.innerHTML = `
-                <div>${b.name}</div>
+                <div class="building-icon"><i class="${b.icon}"></i></div>
+                <div class="building-name">${b.name}</div>
                 <div class="building-cost">
                     ${costStr}
                 </div>
@@ -392,9 +393,9 @@ export class UIManager {
                 
                 <div class="profile-content">
                     <div class="gear-column left">
-                        <div class="gear-slot" data-label="Weapon">⚔️</div>
-                        <div class="gear-slot" data-label="Shield">🛡️</div>
-                        <div class="gear-slot" data-label="Helmet">🪖</div>
+                        <div class="gear-slot" data-label="Weapon"><i class="ra ra-sword"></i></div>
+                        <div class="gear-slot" data-label="Shield"><i class="ra ra-shield"></i></div>
+                        <div class="gear-slot" data-label="Helmet"><i class="ra ra-helmet"></i></div>
                     </div>
                     
                     <div class="profile-main-image">
@@ -402,9 +403,9 @@ export class UIManager {
                     </div>
                     
                     <div class="gear-column right">
-                        <div class="gear-slot" data-label="Accessory">💍</div>
-                        <div class="gear-slot" data-label="Mount">🐎</div>
-                        <div class="gear-slot" data-label="Armor">🥋</div>
+                        <div class="gear-slot" data-label="Accessory"><i class="ra ra-ring"></i></div>
+                        <div class="gear-slot" data-label="Mount"><i class="ra ra-wolf-head"></i></div>
+                        <div class="gear-slot" data-label="Armor"><i class="ra ra-vest"></i></div>
                     </div>
                 </div>
                 
@@ -462,18 +463,18 @@ export class UIManager {
             const r = this.gameManager.resources;
             // Define icons/labels
             const resData = [
-                { id: 'solidi', label: 'Solidi', icon: '💰', val: Math.floor(r.solidi) },
-                { id: 'wood', label: 'Wood', icon: '🌲', val: Math.floor(r.wood) },
-                { id: 'stone', label: 'Stone', icon: '🪨', val: Math.floor(r.stone) },
-                { id: 'iron', label: 'Iron', icon: '⛏️', val: Math.floor(r.iron) },
-                { id: 'food', label: 'Food', icon: '🍞', val: Math.floor(r.food) }
+                { id: 'solidi', label: 'Solidi', icon: 'ra ra-gold-bar icon-solidi', val: Math.floor(r.solidi) },
+                { id: 'wood', label: 'Wood', icon: 'ra ra-pine-tree icon-wood', val: Math.floor(r.wood) },
+                { id: 'stone', label: 'Stone', icon: 'ra ra-cubes icon-stone', val: Math.floor(r.stone) },
+                { id: 'iron', label: 'Iron', icon: 'ra ra-mining-diamonds icon-iron', val: Math.floor(r.iron) },
+                { id: 'food', label: 'Food', icon: 'ra ra-meat icon-food', val: Math.floor(r.food) }
             ];
 
             // Use simple ID checks to avoid full re-render flickering if possible, 
             // but map + innerHTML is fine for now as it's efficient enough.
             resDisplay.innerHTML = resData.map(res => `
                 <div class="resource-box">
-                    <div class="res-icon">${res.icon}</div>
+                    <div class="res-icon"><i class="${res.icon}"></i></div>
                     <div class="res-val">${res.val}</div>
                     <div class="res-label">${res.label}</div>
                 </div>
@@ -526,14 +527,14 @@ export class UIManager {
                     const remaining = Math.ceil((explorer.endTime - Date.now()) / 1000);
                     btn.innerHTML = `
                         <div style="font-size:0.7em">Back:</div>
-                        <div class="explore-icon">${type.icon}</div>
+                        <div class="explore-icon"><i class="${type.icon} icon-${type.id}"></i></div>
                         <div class="explore-cost">${remaining}s</div>
                     `;
                     btn.disabled = true;
                 } else {
                     btn.innerHTML = `
-                        <div class="explore-icon">${type.icon}</div>
-                        <div class="explore-cost">${type.cost}</div>
+                        <div class="explore-icon"><i class="${type.icon} icon-${type.id}"></i></div>
+                        <div class="explore-cost"><i class="ra ra-gold-bar icon-solidi"></i> ${type.cost}</div>
                     `;
                     btn.disabled = this.gameManager.resources.solidi < type.cost;
                 }
@@ -587,10 +588,10 @@ export class UIManager {
                     <p><strong>Production:</strong> +50%</p>
                     <p><strong>XP Reward:</strong> 10 XP</p>
                     <div class="cost-list">
-                        ${cost.solidi > 0 ? `<div>💰 ${cost.solidi} Solidi</div>` : ''}
-                        ${cost.wood > 0 ? `<div>🌲 ${cost.wood} Wood</div>` : ''}
-                        ${cost.stone > 0 ? `<div>🪨 ${cost.stone} Stone</div>` : ''}
-                        ${cost.iron > 0 ? `<div>⛏️ ${cost.iron} Iron</div>` : ''}
+                        ${cost.solidi > 0 ? `<div><i class="ra ra-gold-bar icon-solidi"></i> ${cost.solidi} Solidi</div>` : ''}
+                        ${cost.wood > 0 ? `<div><i class="ra ra-pine-tree icon-wood"></i> ${cost.wood} Wood</div>` : ''}
+                        ${cost.stone > 0 ? `<div><i class="ra ra-cubes icon-stone"></i> ${cost.stone} Stone</div>` : ''}
+                        ${cost.iron > 0 ? `<div><i class="ra ra-mining-diamonds icon-iron"></i> ${cost.iron} Iron</div>` : ''}
                     </div>
                 </div>
                 <div style="display: flex; gap: 10px; justify-content: center;">
