@@ -54,8 +54,6 @@ export class UIManager {
     showSelectionScreen() {
         this.clear();
         this.currentScreen = 'selection';
-
-        // Ensure pointer events are auto for interaction
         this.container.style.pointerEvents = 'auto';
 
         if (this.currentGeneralIndex === undefined) {
@@ -65,83 +63,205 @@ export class UIManager {
         const screen = document.createElement('div');
         screen.className = 'selection-screen slider-mode';
 
-        // Slider Container
-        const sliderContainer = document.createElement('div');
-        sliderContainer.className = 'slider-container';
+        // === Carousel Viewport ===
+        const viewport = document.createElement('div');
+        viewport.className = 'carousel-viewport';
 
-        // Navigation Buttons
-        const prevBtn = document.createElement('button');
-        prevBtn.className = 'slider-nav prev';
-        prevBtn.innerHTML = '&#10094;'; // Left Arrow
-        prevBtn.onclick = () => this.prevGeneral();
+        // === Carousel Track ===
+        const track = document.createElement('div');
+        track.className = 'carousel-track';
 
-        const nextBtn = document.createElement('button');
-        nextBtn.className = 'slider-nav next';
-        nextBtn.innerHTML = '&#10095;'; // Right Arrow
-        nextBtn.onclick = () => this.nextGeneral();
+        // Render Cards
+        this.cardElements = [];
+        GENERALS.forEach((general, index) => {
+            const card = document.createElement('div');
+            card.className = 'carousel-card';
+            // Store index for easy access
+            card.dataset.index = index;
 
-        // Current General Content
-        const general = GENERALS[this.currentGeneralIndex];
+            const img = document.createElement('img');
+            img.src = general.image;
+            img.className = 'slider-image';
+            img.draggable = false; // Prevent browser drag
 
-        const content = document.createElement('div');
-        content.className = 'slider-content';
+            const info = document.createElement('div');
+            info.className = 'slider-info';
 
-        const img = document.createElement('img');
-        img.src = general.image;
-        img.className = 'slider-image';
+            const name = document.createElement('h1');
+            name.textContent = general.name;
 
-        const info = document.createElement('div');
-        info.className = 'slider-info';
+            const desc = document.createElement('p');
+            desc.className = 'slider-desc';
+            desc.textContent = general.description;
 
-        const name = document.createElement('h1');
-        name.textContent = general.name;
+            const bonus = document.createElement('div');
+            bonus.className = 'slider-bonus';
+            const bonusText = Object.entries(general.bonus)
+                .map(([key, val]) => `${key.toUpperCase()}: ${val > 1 ? '+' + Math.round((val - 1) * 100) + '%' : Math.round((val - 1) * 100) + '%'}`)
+                .join(' | ');
+            bonus.textContent = bonusText;
 
-        const desc = document.createElement('p');
-        desc.className = 'slider-desc';
-        desc.textContent = general.description;
+            info.appendChild(name);
+            info.appendChild(desc);
+            info.appendChild(bonus);
 
-        const bonus = document.createElement('div');
-        bonus.className = 'slider-bonus';
-        // Format bonus text nicely
-        const bonusText = Object.entries(general.bonus)
-            .map(([key, val]) => `${key.toUpperCase()}: ${val > 1 ? '+' + Math.round((val - 1) * 100) + '%' : Math.round((val - 1) * 100) + '%'}`)
-            .join(' | ');
-        bonus.textContent = bonusText;
+            card.appendChild(img);
+            card.appendChild(info);
+            track.appendChild(card);
+            this.cardElements.push(card);
+        });
 
+        viewport.appendChild(track);
+        screen.appendChild(viewport);
+
+        // === Select Button ===
         const selectBtn = document.createElement('button');
         selectBtn.className = 'select-btn';
         selectBtn.textContent = 'START REIGN';
+        selectBtn.style.marginTop = '20px';
         selectBtn.onclick = () => {
+            const general = GENERALS[this.currentGeneralIndex];
             this.gameManager.selectGeneral(general.id);
             this.showGameUI();
         };
+        screen.appendChild(selectBtn);
 
-        info.appendChild(name);
-        info.appendChild(desc);
-        info.appendChild(bonus);
-        info.appendChild(selectBtn);
-
-        content.appendChild(img);
-        content.appendChild(info);
-
-        sliderContainer.appendChild(prevBtn);
-        sliderContainer.appendChild(content);
-        sliderContainer.appendChild(nextBtn);
-
-        screen.appendChild(sliderContainer);
         this.container.appendChild(screen);
+
+        // === Initialize Carousel Logic ===
+        this.initCarousel(viewport, track);
     }
 
-    prevGeneral() {
-        this.currentGeneralIndex--;
-        if (this.currentGeneralIndex < 0) this.currentGeneralIndex = GENERALS.length - 1;
-        this.showSelectionScreen();
-    }
+    initCarousel(viewport, track) {
+        let isDragging = false;
+        let startPos = 0;
+        let currentTranslate = 0;
+        let prevTranslate = 0;
+        let animationID;
+        let currentIndex = this.currentGeneralIndex || 0;
 
-    nextGeneral() {
-        this.currentGeneralIndex++;
-        if (this.currentGeneralIndex >= GENERALS.length) this.currentGeneralIndex = 0;
-        this.showSelectionScreen();
+        // Configuration
+        const cardWidth = 320; // 280px width + 40px gap
+        // We center the first item using padding-left: 50%.
+        // So index 0 is at translate 0 (relative to that padding).
+        // Index 1 is at -cardWidth, etc.
+        // We need to offset by half the card width to center it perfectly?
+        // Let's refine:
+        // viewport center is at 50%.
+        // track padding-left is 50%.
+        // So the left edge of the first card is at the center of the viewport.
+        // We want the CENTER of the first card to be at the center of the viewport.
+        // Card width is 280px. So we need to shift left by 140px.
+        // So initial offset for index 0 is -140px.
+        const centerOffset = -140;
+
+        const setSliderPosition = () => {
+            track.style.transform = `translateX(${currentTranslate}px)`;
+        };
+
+        const updateActiveCard = () => {
+            // Find which index is closest to center
+            // Position relative to 0 (which is index 0)
+            // effectivePos = currentTranslate - centerOffset
+            // index = -effectivePos / cardWidth
+            const effectivePos = currentTranslate - centerOffset;
+            const rawIndex = -effectivePos / cardWidth;
+            let index = Math.round(rawIndex);
+
+            // Clamp
+            if (index < 0) index = 0;
+            if (index > GENERALS.length - 1) index = GENERALS.length - 1;
+
+            this.currentGeneralIndex = index;
+
+            this.cardElements.forEach((card, i) => {
+                if (i === index) card.classList.add('active');
+                else card.classList.remove('active');
+            });
+        };
+
+        // Initialize position
+        // Target for index i: centerOffset + i * -cardWidth
+        const getPositionForIndex = (index) => {
+            return centerOffset + (index * -cardWidth);
+        };
+
+        // Set initial state
+        prevTranslate = getPositionForIndex(currentIndex);
+        currentTranslate = prevTranslate;
+        setSliderPosition();
+        updateActiveCard();
+
+        // Drag Events
+        const touchStart = (index) => {
+            return (event) => {
+                isDragging = true;
+                startPos = getPositionX(event);
+                animationID = requestAnimationFrame(animation);
+                viewport.classList.add('grabbing');
+                track.style.transition = 'none'; // Disable transition during drag
+            }
+        }
+
+        const touchEnd = () => {
+            isDragging = false;
+            cancelAnimationFrame(animationID);
+            viewport.classList.remove('grabbing');
+            track.style.transition = 'transform 0.3s ease-out'; // Re-enable for snap
+
+            // Snap logic
+            const movedBy = currentTranslate - prevTranslate;
+
+            // Simple snap to nearest
+            const effectivePos = currentTranslate - centerOffset;
+            const rawIndex = -effectivePos / cardWidth;
+            let index = Math.round(rawIndex);
+
+            // Clamp
+            if (index < 0) index = 0;
+            if (index > GENERALS.length - 1) index = GENERALS.length - 1;
+
+            currentIndex = index;
+            currentTranslate = getPositionForIndex(currentIndex);
+            prevTranslate = currentTranslate;
+
+            setSliderPosition();
+            updateActiveCard();
+        }
+
+        const touchMove = (event) => {
+            if (isDragging) {
+                const currentPosition = getPositionX(event);
+                const diff = currentPosition - startPos;
+                currentTranslate = prevTranslate + diff;
+            }
+        }
+
+        const getPositionX = (event) => {
+            return event.type.includes('mouse') ? event.pageX : event.touches[0].clientX;
+        }
+
+        const animation = () => {
+            setSliderPosition();
+            if (isDragging) requestAnimationFrame(animation);
+        }
+
+        // Listeners
+        viewport.addEventListener('touchstart', touchStart(currentIndex));
+        viewport.addEventListener('touchend', touchEnd);
+        viewport.addEventListener('touchmove', touchMove);
+
+        viewport.addEventListener('mousedown', touchStart(currentIndex));
+        viewport.addEventListener('mouseup', touchEnd);
+        viewport.addEventListener('mouseleave', () => { if (isDragging) touchEnd() });
+        viewport.addEventListener('mousemove', touchMove);
+
+        // Context menu disable
+        window.oncontextmenu = function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            return false;
+        }
     }
 
     showGameUI() {
@@ -152,6 +272,12 @@ export class UIManager {
         // === HUD Top Left: General Info ===
         const generalPanel = document.createElement('div');
         generalPanel.className = 'general-panel ui-element';
+        generalPanel.style.cursor = 'pointer'; // Make it look clickable
+
+        // Add click handler to open profile
+        generalPanel.onclick = () => {
+            this.showGeneralProfile();
+        };
 
         const genImg = document.createElement('img');
         genImg.src = this.gameManager.selectedGeneral.image;
@@ -180,7 +306,11 @@ export class UIManager {
             const btn = document.createElement('button');
             btn.className = 'explore-btn';
             btn.id = `explore-${type.id}`;
-            btn.innerHTML = `${type.name} (Cost: ${type.cost} S)`;
+            btn.innerHTML = `
+                <div>Search for:</div>
+                <div class="explore-icon">${type.icon}</div>
+                <div class="explore-cost">(cost: ${type.cost} S)</div>
+            `;
             btn.onclick = () => this.gameManager.sendExplorer(type.id);
             explorationPanel.appendChild(btn);
         });
@@ -231,14 +361,105 @@ export class UIManager {
         this.update(); // Initial update
     }
 
+    showGeneralProfile() {
+        // Don't close the game UI, just overlay on top
+        // But we need to pause interaction with the game itself if possible?
+        // For now just an overlay div
+
+        const overlay = document.createElement('div');
+        overlay.className = 'general-profile-screen';
+
+        const stats = this.gameManager.generalStats;
+        const general = this.gameManager.selectedGeneral;
+
+        if (!stats || !general) {
+            console.error("General stats or selected general missing");
+            return;
+        }
+
+        overlay.innerHTML = `
+            <div class="profile-container">
+                <button class="profile-close-btn">&times;</button>
+                <div class="profile-header">
+                    <h1 class="profile-name">${general.name}</h1>
+                    <div class="profile-level">Level <span id="profile-level-val">${stats.level}</span></div>
+                    
+                    <div class="xp-container">
+                        <div class="xp-fill" id="profile-xp-fill" style="width: ${(stats.xp / stats.nextLevelXp) * 100}%"></div>
+                        <div class="xp-text"><span id="profile-xp-val">${stats.xp}</span> / <span id="profile-next-xp-val">${stats.nextLevelXp}</span> XP</div>
+                    </div>
+                </div>
+                
+                <div class="profile-content">
+                    <div class="gear-column left">
+                        <div class="gear-slot" data-label="Weapon">⚔️</div>
+                        <div class="gear-slot" data-label="Shield">🛡️</div>
+                        <div class="gear-slot" data-label="Helmet">🪖</div>
+                    </div>
+                    
+                    <div class="profile-main-image">
+                        <img src="${general.image}" alt="${general.name}">
+                    </div>
+                    
+                    <div class="gear-column right">
+                        <div class="gear-slot" data-label="Accessory">💍</div>
+                        <div class="gear-slot" data-label="Mount">🐎</div>
+                        <div class="gear-slot" data-label="Armor">🥋</div>
+                    </div>
+                </div>
+                
+                <div class="profile-footer">
+                    <div class="commanders-area">
+                        Commanders coming soon...
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Close logic
+        overlay.querySelector('.profile-close-btn').addEventListener('click', () => {
+            overlay.remove();
+        });
+
+        // Close on click outside
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) overlay.remove();
+        });
+
+        this.container.appendChild(overlay);
+        this.currentProfileOverlay = overlay;
+    }
+
     update() {
         if (this.currentScreen !== 'game') return;
 
+        // Update generic game stuff
+        this.updateGameHUD();
+
+        // Update Profile if open
+        if (this.currentProfileOverlay) {
+            const stats = this.gameManager.generalStats;
+            if (stats) {
+                const xpFill = this.currentProfileOverlay.querySelector('#profile-xp-fill');
+                const xpVal = this.currentProfileOverlay.querySelector('#profile-xp-val');
+                const nextXpVal = this.currentProfileOverlay.querySelector('#profile-next-xp-val');
+                const levelVal = this.currentProfileOverlay.querySelector('#profile-level-val');
+
+                if (xpFill && xpVal && nextXpVal && levelVal) {
+                    xpFill.style.width = `${(stats.xp / stats.nextLevelXp) * 100}%`;
+                    xpVal.textContent = Math.floor(stats.xp);
+                    nextXpVal.textContent = stats.nextLevelXp;
+                    levelVal.textContent = stats.level;
+                }
+            }
+        }
+    }
+
+    updateGameHUD() {
         // Resources
         const resDisplay = document.getElementById('resource-display');
         if (resDisplay) {
             const r = this.gameManager.resources;
-
             // Define icons/labels
             const resData = [
                 { id: 'solidi', label: 'Solidi', icon: '💰', val: Math.floor(r.solidi) },
@@ -248,6 +469,8 @@ export class UIManager {
                 { id: 'food', label: 'Food', icon: '🍞', val: Math.floor(r.food) }
             ];
 
+            // Use simple ID checks to avoid full re-render flickering if possible, 
+            // but map + innerHTML is fine for now as it's efficient enough.
             resDisplay.innerHTML = resData.map(res => `
                 <div class="resource-box">
                     <div class="res-icon">${res.icon}</div>
@@ -264,12 +487,11 @@ export class UIManager {
             this.gameManager.activeRequests.forEach(req => {
                 const item = document.createElement('div');
                 item.className = 'request-item';
-                // ... same logic as before ...
                 item.innerHTML = `
-                    <div class="req-title">${req.title}</div>
-                    <div class="req-desc">${req.description}</div>
-                    <div class="req-reward">Reward: ${req.reward.solidi} Solidi</div>
-                `;
+                     <div class="req-title">${req.title}</div>
+                     <div class="req-desc">${req.description}</div>
+                     <div class="req-reward">Reward: ${req.reward.solidi} Solidi</div>
+                 `;
 
                 if (req.status === 'completed') {
                     item.classList.add('completed');
@@ -302,10 +524,18 @@ export class UIManager {
                 const explorer = this.gameManager.explorers[type.id];
                 if (explorer) {
                     const remaining = Math.ceil((explorer.endTime - Date.now()) / 1000);
-                    btn.textContent = `Scout returning in ${remaining}s`;
+                    btn.innerHTML = `
+                        <div>Returning in:</div>
+                        <div class="explore-icon">${type.icon}</div>
+                        <div class="explore-cost">${remaining}s</div>
+                    `;
                     btn.disabled = true;
                 } else {
-                    btn.innerHTML = `${type.name} <br> (Cost: ${type.cost} S)`;
+                    btn.innerHTML = `
+                        <div>Search for:</div>
+                        <div class="explore-icon">${type.icon}</div>
+                        <div class="explore-cost">(cost: ${type.cost} S)</div>
+                    `;
                     btn.disabled = this.gameManager.resources.solidi < type.cost;
                 }
             }

@@ -11,6 +11,14 @@ export class GameManager {
         };
         this.buildings = [];
         this.selectedGeneral = null;
+
+        // General Stats (RPG Progression)
+        this.generalStats = {
+            level: 1,
+            xp: 0,
+            nextLevelXp: 1000
+        };
+
         this.productionRates = {
             solidi: 0,
             wood: 0,
@@ -32,8 +40,7 @@ export class GameManager {
         this.lastRequestTime = Date.now();
         this.requestInterval = 15000;
 
-        // Speed Up Cost Factor (Solidi per second remaining? Or flat?)
-        // Let's use a flat cost or dynamic. For now: 
+        // Speed Up Cost Factor
         this.speedUpBaseCost = 50;
     }
 
@@ -53,6 +60,7 @@ export class GameManager {
     startGame() {
         this.constructBuilding('palace', true);
         this.startLoop();
+        this.startPassiveXpLoop();
     }
 
     startLoop() {
@@ -62,6 +70,32 @@ export class GameManager {
             this.checkExplorers();
             this.checkConstruction();
         }, 1000);
+    }
+
+    startPassiveXpLoop() {
+        // Passive XP gain: amount depends on city size (buildings)
+        setInterval(() => {
+            // Base XP (1) + 1 XP per 2 active buildings
+            const activeBuildings = this.buildings.filter(b => b.status === 'active').length;
+            const xpAmount = 1 + Math.floor(activeBuildings / 2);
+            this.addXp(xpAmount);
+        }, 5000);
+    }
+
+    addXp(amount) {
+        this.generalStats.xp += amount;
+
+        // Check for level up
+        if (this.generalStats.xp >= this.generalStats.nextLevelXp) {
+            this.generalStats.xp -= this.generalStats.nextLevelXp;
+            this.generalStats.level++;
+            // Increase requirement for next level (simple curve)
+            this.generalStats.nextLevelXp = Math.floor(this.generalStats.nextLevelXp * 1.5);
+            console.log(`Leveled Up! New Level: ${this.generalStats.level}`);
+
+            // TODO: Notification or visual effect
+        }
+        this.notify();
     }
 
     updateResources() {
@@ -263,6 +297,9 @@ export class GameManager {
         }
 
         this.buildings.push(newBuilding);
+
+        // Grant Active XP for starting construction
+        this.addXp(50);
 
         // Handle Request Status
         const req = this.activeRequests.find(r => r.target === buildingId && r.status === 'active');

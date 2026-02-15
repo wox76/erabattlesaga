@@ -234,6 +234,7 @@ export const EXPLORATION_TYPES = {
     wood: {
         id: 'wood',
         name: 'Search for Wood',
+        icon: '🌲',
         cost: 50,
         time: 5000, // 5 seconds
         risk: 0.1, // 10% fail
@@ -243,6 +244,7 @@ export const EXPLORATION_TYPES = {
     stone: {
         id: 'stone',
         name: 'Search for Stone',
+        icon: '🪨',
         cost: 80,
         time: 8000,
         risk: 0.2,
@@ -252,6 +254,7 @@ export const EXPLORATION_TYPES = {
     iron: {
         id: 'iron',
         name: 'Search for Iron',
+        icon: '⛏️',
         cost: 120,
         time: 12000,
         risk: 0.3,
