@@ -86,8 +86,8 @@ export class SceneManager {
         this.scene.add(cityArea);
     }
 
-    // Helper to create material based on status
-    getBuildingMaterial(color, status) {
+    // Helper to create material based on status and level
+    getBuildingMaterial(colorHex, status, level = 1) {
         if (status === 'constructing') {
             return new THREE.MeshStandardMaterial({
                 color: 0xFFA500, // Orange
@@ -96,6 +96,20 @@ export class SceneManager {
                 opacity: 0.8
             });
         }
+
+        const color = new THREE.Color(colorHex);
+
+        // Adjust saturation/lightness based on level
+        if (level > 1) {
+            const hsl = {};
+            color.getHSL(hsl);
+            // Increase saturation by 20% per level (capped at 1)
+            hsl.s = Math.min(1.0, hsl.s + (level - 1) * 0.2);
+            // Slightly darken to make color deeper/richer? Or keep lightness same?
+            // Let's just boost saturation for now as requested.
+            color.setHSL(hsl.h, hsl.s, hsl.l);
+        }
+
         return new THREE.MeshStandardMaterial({ color: color });
     }
 
@@ -109,7 +123,7 @@ export class SceneManager {
         // Box geometry based on size
         const geometry = new THREE.BoxGeometry(w * 10 - 2, 10, d * 10 - 2); // -2 provides a small gap
 
-        const material = this.getBuildingMaterial(def.color, buildingData.status);
+        const material = this.getBuildingMaterial(def.color, buildingData.status, buildingData.level);
         const mesh = new THREE.Mesh(geometry, material);
 
         // User Data for identification
@@ -131,11 +145,12 @@ export class SceneManager {
     }
 
     // Update visual if status changes (called by GameManager/Main)
-    updateBuildingStatus(buildingId, status) {
-        const mesh = this.buildingMeshes.find(m => m.userData.id === buildingId);
+    updateBuildingStatus(building) {
+        const mesh = this.buildingMeshes.find(m => m.userData.id === building.id);
         if (mesh) {
             const def = BUILDINGS[mesh.userData.type];
-            mesh.material = this.getBuildingMaterial(def.color, status);
+            // Pass level to get material with correct saturation
+            mesh.material = this.getBuildingMaterial(def.color, building.status, building.level);
         }
     }
 
@@ -151,9 +166,12 @@ export class SceneManager {
 
         if (intersects.length > 0) {
             const object = intersects[0].object;
+            console.log("Clicked object:", object.userData);
             if (this.onBuildingClick) {
                 this.onBuildingClick(object.userData.id);
             }
+        } else {
+            console.log("Clicked nothing");
         }
     }
 

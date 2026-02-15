@@ -267,6 +267,7 @@ export class UIManager {
     showGameUI() {
         this.clear();
         this.currentScreen = 'game';
+        this.container.style.pointerEvents = 'none'; // Allow clicks to pass through to canvas
         this.container.style.pointerEvents = 'none'; // Passthrough for 3D controls
 
         // === HUD Top Left: General Info ===
@@ -300,16 +301,15 @@ export class UIManager {
         // === Exploration Panel - Left (Below General) ===
         const explorationPanel = document.createElement('div');
         explorationPanel.className = 'exploration-panel ui-element';
-        explorationPanel.innerHTML = '<h3>Scouts</h3>';
+        explorationPanel.innerHTML = '<h3 style="font-size: 0.8em; line-height: 1.2;">SCOUTS<br>search for:</h3>';
 
         Object.values(EXPLORATION_TYPES).forEach(type => {
             const btn = document.createElement('button');
             btn.className = 'explore-btn';
             btn.id = `explore-${type.id}`;
             btn.innerHTML = `
-                <div>Search for:</div>
                 <div class="explore-icon">${type.icon}</div>
-                <div class="explore-cost">(cost: ${type.cost} S)</div>
+                <div class="explore-cost">${type.cost}</div>
             `;
             btn.onclick = () => this.gameManager.sendExplorer(type.id);
             explorationPanel.appendChild(btn);
@@ -525,16 +525,15 @@ export class UIManager {
                 if (explorer) {
                     const remaining = Math.ceil((explorer.endTime - Date.now()) / 1000);
                     btn.innerHTML = `
-                        <div>Returning in:</div>
+                        <div style="font-size:0.7em">Back:</div>
                         <div class="explore-icon">${type.icon}</div>
                         <div class="explore-cost">${remaining}s</div>
                     `;
                     btn.disabled = true;
                 } else {
                     btn.innerHTML = `
-                        <div>Search for:</div>
                         <div class="explore-icon">${type.icon}</div>
-                        <div class="explore-cost">(cost: ${type.cost} S)</div>
+                        <div class="explore-cost">${type.cost}</div>
                     `;
                     btn.disabled = this.gameManager.resources.solidi < type.cost;
                 }
@@ -555,5 +554,68 @@ export class UIManager {
                 }
             }
         });
+    }
+
+    showBuildingUpgradeModal(buildingId) {
+        const building = this.gameManager.buildings.find(b => b.id === buildingId);
+        if (!building) return;
+
+        const def = BUILDINGS[building.type];
+        const currentLevel = building.level || 1;
+        const nextLevel = currentLevel + 1;
+
+        // Calculate Costs for Next Level
+        const levelMultiplier = Math.pow(1.5, currentLevel);
+        const cost = {
+            solidi: Math.floor(def.cost.solidi * levelMultiplier),
+            wood: Math.floor(def.cost.wood * levelMultiplier),
+            stone: Math.floor(def.cost.stone * levelMultiplier),
+            iron: Math.floor(def.cost.iron * levelMultiplier)
+        };
+
+        // Create Modal Overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+
+        // Modal Content
+        overlay.innerHTML = `
+            <div class="modal-content" style="width: 400px; text-align: center;">
+                <h2>${def.name} (Level ${currentLevel})</h2>
+                <p>${def.description}</p>
+                <div style="margin: 20px 0; text-align: left;">
+                    <h3>Upgrade to Level ${nextLevel}</h3>
+                    <p><strong>Production:</strong> +50%</p>
+                    <p><strong>XP Reward:</strong> 10 XP</p>
+                    <div class="cost-list">
+                        ${cost.solidi > 0 ? `<div>💰 ${cost.solidi} Solidi</div>` : ''}
+                        ${cost.wood > 0 ? `<div>🌲 ${cost.wood} Wood</div>` : ''}
+                        ${cost.stone > 0 ? `<div>🪨 ${cost.stone} Stone</div>` : ''}
+                        ${cost.iron > 0 ? `<div>⛏️ ${cost.iron} Iron</div>` : ''}
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button id="confirm-upgrade" class="btn primary-btn">Upgrade</button>
+                    <button id="cancel-upgrade" class="btn close-btn">Cancel</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        // Event Listeners
+        const confirmBtn = overlay.querySelector('#confirm-upgrade');
+        confirmBtn.onclick = () => {
+            const success = this.gameManager.upgradeBuilding(buildingId);
+            if (success) {
+                document.body.removeChild(overlay);
+            } else {
+                alert("Not enough resources!");
+            }
+        };
+
+        const cancelBtn = overlay.querySelector('#cancel-upgrade');
+        cancelBtn.onclick = () => {
+            document.body.removeChild(overlay);
+        };
     }
 }

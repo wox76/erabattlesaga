@@ -108,11 +108,12 @@ export class GameManager {
 
             const def = BUILDINGS[b.type];
             if (def) {
-                prod.solidi += def.production.solidi;
-                prod.wood += def.production.wood;
-                prod.stone += def.production.stone;
-                prod.iron += def.production.iron;
-                prod.food += def.production.food;
+                const lvlMult = Math.pow(1.5, (b.level || 1) - 1);
+                prod.solidi += def.production.solidi * lvlMult;
+                prod.wood += def.production.wood * lvlMult;
+                prod.stone += def.production.stone * lvlMult;
+                prod.iron += def.production.iron * lvlMult;
+                prod.food += def.production.food * lvlMult;
             }
         });
 
@@ -144,6 +145,13 @@ export class GameManager {
                 if (now >= b.endTime) {
                     b.status = 'active';
                     changed = true;
+
+                    if (b.isUpgrading) {
+                        b.level = (b.level || 1) + 1;
+                        delete b.isUpgrading;
+                        this.addXp(10); // 10 XP for upgrade
+                        console.log(`Building upgraded to Level ${b.level}`);
+                    }
 
                     // Check for requests waiting for this building
                     const req = this.activeRequests.find(r => r.target === b.type && r.status === 'constructing');
@@ -283,7 +291,10 @@ export class GameManager {
             gridZ: spot.z,
             width: b.width,
             depth: b.depth,
+            width: b.width,
+            depth: b.depth,
             status: time > 0 ? 'constructing' : 'active',
+            level: 1, // Start at Level 1
             startTime: Date.now(),
             endTime: Date.now() + time,
             totalTime: time
@@ -316,30 +327,55 @@ export class GameManager {
         return newBuilding;
     }
 
-    speedUpBuilding(buildingId) {
+    upgradeBuilding(buildingId) {
         const b = this.buildings.find(b => b.id === buildingId);
-        if (!b || b.status !== 'constructing') return;
+        if (!b || b.status !== 'active') return;
 
-        // Calculate Cost
-        const remaining = Math.max(0, b.endTime - Date.now());
-        const cost = Math.ceil((remaining / 1000) * 10); // 10 Solidi per second remaining?
+        const def = BUILDINGS[b.type];
+        // Cost: 1.5x base cost * current level
+        const levelMultiplier = Math.pow(1.5, b.level || 1);
+        const cost = {
+            solidi: Math.floor(def.cost.solidi * levelMultiplier),
+            wood: Math.floor(def.cost.wood * levelMultiplier),
+            stone: Math.floor(def.cost.stone * levelMultiplier),
+            iron: Math.floor(def.cost.iron * levelMultiplier)
+        };
 
-        if (this.resources.solidi >= cost) {
-            this.resources.solidi -= cost;
-            b.endTime = Date.now(); // Finish now
-            b.status = 'active';
-
-            // Speed up also completes the request
-            const req = this.activeRequests.find(r => r.target === b.type && r.status === 'constructing');
-            if (req) {
-                this.completeRequest(req);
-            }
-
-            this.notify();
-            console.log(`Speed up building for ${cost} Solidi`);
-        } else {
-            console.log(`Not enough Solidi to speed up (${cost} needed)`);
+        // Check affordability
+        if (this.resources.solidi < cost.solidi ||
+            this.resources.wood < cost.wood ||
+            this.resources.stone < cost.stone ||
+            this.resources.iron < cost.iron) {
+            console.log("Not enough resources to upgrade");
+            return false;
         }
+
+        // Deduct resources
+        this.resources.solidi -= cost.solidi;
+        this.resources.wood -= cost.wood;
+        this.resources.stone -= cost.stone;
+        this.resources.iron -= cost.iron;
+
+        // Start Upgrade
+        // Time: 50% of base time * level (maybe? or just fixed 50%)
+        // Let's go with 50% of base time
+        const upgradeTime = (def.buildTime || 5000) * 0.5;
+
+        b.status = 'constructing';
+        b.startTime = Date.now();
+        b.endTime = Date.now() + upgradeTime;
+        b.totalTime = upgradeTime;
+
+        // After upgrade completes (in checkConstruction), level will be incremented there?
+        // Actually checkConstruction handles 'constructing' -> 'active'.
+        // We should add a flag or just assume construction on existing building means upgrade?
+        // Let's simply handle the level increment NOW or in checkConstruction?
+        // If we do it now, it might be weird if we cancel. 
+        // Let's store 'isUpgrading' flag.
+        b.isUpgrading = true;
+
+        this.notify();
+        return true;
     }
 
     sendExplorer(type) {

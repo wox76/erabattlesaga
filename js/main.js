@@ -15,7 +15,16 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // Hook up Interaction
     sceneManager.onBuildingClick = (buildingId) => {
-        gameManager.speedUpBuilding(buildingId);
+        console.log("Main received click for building:", buildingId);
+        // Check if building is constructing or active
+        const b = gameManager.buildings.find(b => b.id === buildingId);
+        if (b) {
+            if (b.status === 'constructing') {
+                gameManager.speedUpBuilding(buildingId);
+            } else {
+                uiManager.showBuildingUpgradeModal(buildingId);
+            }
+        }
     };
 
     // Hook up Game Events to Scene
@@ -30,8 +39,8 @@ window.addEventListener('DOMContentLoaded', () => {
                 // Add new building
                 sceneManager.addBuilding(b);
             } else {
-                // Update visual state (e.g. constructing -> active)
-                sceneManager.updateBuildingStatus(b.id, b.status);
+                // Update visual state (e.g. constructing -> active, or level change)
+                sceneManager.updateBuildingStatus(b);
             }
         });
     });
