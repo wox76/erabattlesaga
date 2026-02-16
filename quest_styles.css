@@ -1,0 +1,281 @@
+/* Quest Button (HUD) */
+.quest-btn-hud {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle, #4a3b2a 0%, #2a1f15 100%);
+    border: 3px solid #d4a017;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2em;
+    color: #ffd700;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    transition: transform 0.2s;
+    pointer-events: auto;
+    z-index: 50;
+}
+
+.quest-btn-hud:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+}
+
+.quest-btn-hud.has-update::after {
+    content: '!';
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 20px;
+    height: 20px;
+    background: #ff0000;
+    color: white;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+/* Quest Log Overlay - Now positioned as a drop-down panel */
+.quest-log-overlay {
+    position: absolute;
+    top: 80px;
+    /* Aligned with Requests panel (below buttons) */
+    right: 20px;
+    /* Aligned with buttons container */
+    width: auto;
+    height: auto;
+    background: transparent;
+    /* No dimming */
+    display: block;
+    /* Normal block flow */
+    z-index: 100;
+    backdrop-filter: none;
+    pointer-events: auto;
+}
+
+/* Match .requests-panel style */
+.quest-log-paper {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-radius: 5px;
+    width: 250px;
+    /* Matched to Request panel width exactly */
+    color: white;
+    max-height: 500px;
+    overflow-y: auto;
+    border: none;
+    /* Removed gold border to match requests-panel which has no border */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Explicitly match body font */
+    box-shadow: none;
+    /* Requests panel has no shadow defined in basic css, maybe add slight one */
+    position: relative;
+}
+
+.quest-close-btn {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    font-size: 1.2em;
+    cursor: pointer;
+    color: #aaa;
+    font-weight: bold;
+    transition: color 0.2s;
+    z-index: 10;
+}
+
+.quest-close-btn:hover {
+    color: #ffd700;
+}
+
+/* Match .requests-panel h3 */
+.quest-header {
+    margin: 0 0 10px 0;
+    text-align: center;
+    border-bottom: 1px solid #555;
+    padding-bottom: 5px;
+}
+
+.quest-header h2 {
+    margin: 0;
+    font-size: 1.1em;
+    /* Match .requests-panel h3 size */
+    text-transform: none;
+    /* Requests don't confirm uppercase */
+    letter-spacing: normal;
+    color: white;
+    /* Requests headers are white/default inheritance usually, or styled specifically? Checking style.css again... .requests-panel h3 has no specific color, inherits white */
+    font-weight: bold;
+}
+
+.quest-header p {
+    font-size: 0.85em;
+    color: #ccc;
+    margin: 5px 0 0 0;
+}
+
+.quest-rewards-main {
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 0.9em;
+    font-weight: bold;
+    color: #00ff00;
+    /* Match Request reward color */
+}
+
+.sub-quests-list {
+    margin-top: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    /* Tighter gap */
+}
+
+/* Match .request-item */
+.sub-quest-item {
+    background: rgba(255, 255, 255, 0.1);
+    margin-bottom: 5px;
+    /* Match request-item margin */
+    padding: 8px;
+    border-radius: 4px;
+    border-left: 3px solid #ffd700;
+    /* Yellow instead of Red (#ff4444) */
+    display: flex;
+    flex-direction: column;
+    /* Stack like request items often do for title/desc/reward */
+    gap: 2px;
+}
+
+.sub-quest-item.completed {
+    border-left-color: #00ff00;
+    opacity: 0.7;
+    background: rgba(0, 255, 0, 0.05);
+    /* Animation to fade out and collapse */
+    animation: fadeOutCollapse 4s forwards;
+    /* 4s duration: 2s visible, 2s fading */
+    transform-origin: top;
+    pointer-events: none;
+    /* Prevent interaction while fading */
+}
+
+@keyframes fadeOutCollapse {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+        max-height: 100px;
+        /* Adjust based on content */
+        margin-bottom: 5px;
+        padding: 8px;
+    }
+
+    50% {
+        opacity: 1;
+        /* Stay visible for 2s (50% of 4s) */
+        transform: scale(1);
+        max-height: 100px;
+        margin-bottom: 5px;
+        padding: 8px;
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(0.9);
+        max-height: 0;
+        margin-bottom: 0;
+        padding: 0;
+        border: none;
+    }
+}
+
+.sq-text {
+    font-weight: bold;
+    font-size: 0.95em;
+    /* Match .req-title */
+    color: #ffd700;
+    /* Match .req-title color */
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.sq-text i {
+    font-size: 0.9em;
+    color: #ecf0f1;
+}
+
+.sq-reward {
+    font-size: 0.8em;
+    /* Match .req-reward */
+    color: #00ff00;
+    margin-top: 2px;
+    text-align: left;
+    /* Requests align left usually */
+}
+
+.sq-action {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 5px;
+}
+
+/* Match .make-btn */
+.sq-action-btn {
+    display: block;
+    width: 100%;
+    padding: 5px;
+    background: #ffd700;
+    /* Yellow themed button */
+    color: black;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9em;
+    /* Close to default */
+    text-align: center;
+}
+
+.sq-action-btn:hover {
+    background: #ffe44d;
+}
+
+.sq-action-btn:disabled {
+    background: #555;
+    color: #aaa;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.sq-done-text {
+    font-size: 0.8em;
+    color: #00ff00;
+    font-weight: bold;
+}
+
+.quest-none {
+    text-align: center;
+    font-size: 1em;
+    padding: 20px;
+    color: #888;
+}

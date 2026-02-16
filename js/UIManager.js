@@ -1,8 +1,9 @@
-import { GENERALS, BUILDINGS, EXPLORATION_TYPES, RESOURCES } from './data.js';
+import { GENERALS, BUILDINGS, EXPLORATION_TYPES, RESOURCES, UNIT_TYPES } from './data.js';
 
 export class UIManager {
     constructor(gameManager) {
         this.gameManager = gameManager;
+        this.gameManager.uiManager = this; // Attach UI Manager to Game Manager
         this.container = document.getElementById('ui-layer');
         this.currentScreen = null;
 
@@ -131,6 +132,7 @@ export class UIManager {
         // === Initialize Carousel Logic ===
         this.initCarousel(viewport, track);
     }
+
 
     initCarousel(viewport, track) {
         let isDragging = false;
@@ -292,30 +294,45 @@ export class UIManager {
         generalPanel.appendChild(genName);
         this.container.appendChild(generalPanel);
 
-        // === Requests Panel - Top Right ===
+        // === HUD Top Right: Buttons Container ===
+        const hudButtons = document.createElement('div');
+        hudButtons.className = 'hud-buttons-container';
+        this.container.appendChild(hudButtons);
+        this.hudButtons = hudButtons;
+
+        // Requests Button (R)
+        const reqBtn = document.createElement('button');
+        reqBtn.className = 'hud-btn';
+        reqBtn.textContent = 'R';
+        reqBtn.title = 'Requests';
+        reqBtn.onclick = () => this.toggleRequests();
+        hudButtons.appendChild(reqBtn);
+
+        // Quests Button (Scroll Icon)
+        const questBtn = document.createElement('button');
+        questBtn.className = 'hud-btn';
+        questBtn.innerHTML = '<i class="ra ra-scroll-unfurled"></i>';
+        questBtn.title = 'Quests';
+        questBtn.onclick = () => this.toggleQuestLog();
+        hudButtons.appendChild(questBtn);
+        this.questBtn = questBtn; // Save ref for updates
+
+        // === Requests Panel (Hidden by default) ===
         const requestsPanel = document.createElement('div');
         requestsPanel.className = 'requests-panel ui-element';
         requestsPanel.id = 'requests-panel';
+        requestsPanel.style.display = 'none'; // Hidden initially
         this.container.appendChild(requestsPanel);
+        this.requestsPanel = requestsPanel;
 
         // === Exploration Panel - Left (Below General) ===
-        const explorationPanel = document.createElement('div');
-        explorationPanel.className = 'exploration-panel ui-element';
-        explorationPanel.innerHTML = '<h3 style="font-size: 0.8em; line-height: 1.2;">SCOUTS<br>search for:</h3>';
 
-        Object.values(EXPLORATION_TYPES).forEach(type => {
-            const btn = document.createElement('button');
-            btn.className = 'explore-btn';
-            btn.id = `explore-${type.id}`;
-            btn.innerHTML = `
-                <div class="explore-icon"><i class="${type.icon} icon-${type.id}"></i></div>
-                <div class="explore-cost"><i class="ra ra-gold-bar icon-solidi"></i> ${type.cost}</div>
-            `;
-            btn.onclick = () => this.gameManager.sendExplorer(type.id);
-            explorationPanel.appendChild(btn);
-        });
-
-        this.container.appendChild(explorationPanel);
+        // === Army Button - Right Side (Requests Panel) ===
+        const armyBtn = document.createElement('button');
+        armyBtn.className = 'army-btn ui-element'; // Define style later
+        armyBtn.innerHTML = '<i class="ra ra-crossed-swords"></i> ARMY';
+        armyBtn.onclick = () => this.showArmyUI();
+        this.container.appendChild(armyBtn);
 
         // === Bottom Area Container ===
         const bottomContainer = document.createElement('div');
@@ -618,5 +635,573 @@ export class UIManager {
         cancelBtn.onclick = () => {
             document.body.removeChild(overlay);
         };
+    }
+
+    showArmyUI() {
+        // Switch to 3D Army View
+        this.gameManager.sceneManager.switchToArmy(this.gameManager.armyManager.grid);
+
+        // Hide City UI Elements
+        const reqPanel = document.getElementById('requests-panel');
+        if (reqPanel) reqPanel.style.display = 'none';
+
+        // FORCE CLOSE QUEST LOG & REQUESTS PANEL
+        this.closeQuestLog();
+
+        if (this.requestsPanel) {
+            this.requestsPanel.style.display = 'none';
+        }
+
+        const explorePanel = document.querySelector('.exploration-panel');
+        if (explorePanel) explorePanel.style.display = 'none';
+
+        const bottomContainer = document.querySelector('.bottom-container');
+        if (bottomContainer) bottomContainer.style.display = 'none';
+
+        const armyBtn = document.querySelector('.army-btn');
+        if (armyBtn) armyBtn.style.display = 'none';
+
+        // Hide HUD Buttons (Requests & Quests)
+        if (this.hudButtons) this.hudButtons.style.display = 'none';
+
+
+        // Setup DOM Overlay for Army HUD
+        const overlay = document.createElement('div');
+        overlay.className = 'army-hud';
+        overlay.style.position = 'absolute';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.pointerEvents = 'none'; // Click through to 3D
+
+        // --- Header Container (Center) ---
+        const headerContainer = document.createElement('div');
+        headerContainer.style.position = 'absolute';
+        headerContainer.style.top = '20px';
+        headerContainer.style.left = '50%';
+        headerContainer.style.transform = 'translateX(-50%)';
+        headerContainer.style.display = 'flex';
+        headerContainer.style.alignItems = 'center';
+        headerContainer.style.gap = '20px';
+        headerContainer.style.pointerEvents = 'auto';
+        overlay.appendChild(headerContainer);
+
+        // Army Value Display
+        const valDisplay = document.createElement('h3');
+        valDisplay.id = 'army-value-display';
+        valDisplay.textContent = `Army Power: ${this.gameManager.armyManager.armyValue}`;
+        valDisplay.style.color = 'white';
+        valDisplay.style.margin = '0';
+        valDisplay.style.textShadow = '2px 2px 4px black';
+        valDisplay.style.fontSize = '1.5em';
+        headerContainer.appendChild(valDisplay);
+
+        // Back Button (Return to City)
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'close-army-btn';
+        closeBtn.innerHTML = '<i class="ra ra-tower"></i>'; // Verified icon
+        closeBtn.title = "Back to City";
+        closeBtn.style.padding = '10px';
+        closeBtn.style.fontSize = '1.5em';
+        closeBtn.style.cursor = 'pointer';
+        closeBtn.style.background = 'rgba(0,0,0,0.6)';
+        closeBtn.style.color = 'white';
+        closeBtn.style.border = '2px solid #fff';
+        closeBtn.style.borderRadius = '50%';
+        closeBtn.style.width = '50px';
+        closeBtn.style.height = '50px';
+        closeBtn.style.display = 'flex';
+        closeBtn.style.alignItems = 'center';
+        closeBtn.style.justifyContent = 'center';
+        closeBtn.onclick = () => {
+            // Restore UI
+            if (reqPanel) reqPanel.style.display = '';
+            if (explorePanel) explorePanel.style.display = '';
+            if (bottomContainer) bottomContainer.style.display = '';
+            if (armyBtn) armyBtn.style.display = '';
+            // Restore HUD Buttons
+            if (this.hudButtons) this.hudButtons.style.display = '';
+
+            document.body.removeChild(overlay);
+            this.gameManager.sceneManager.switchToCity();
+            this.armyOverlay = null;
+        };
+        headerContainer.appendChild(closeBtn);
+
+
+        // --- Fight Button (Top Right) ---
+        const fightBtn = document.createElement('button');
+        fightBtn.className = 'fight-btn';
+        fightBtn.innerHTML = 'FIGHT! <i class="ra ra-crossed-swords"></i>';
+        fightBtn.style.position = 'absolute';
+        fightBtn.style.top = '20px';
+        fightBtn.style.right = '20px';
+        fightBtn.style.pointerEvents = 'auto';
+        fightBtn.style.padding = '12px 24px';
+        fightBtn.style.fontSize = '1.2em';
+        fightBtn.style.background = 'linear-gradient(45deg, #d32f2f, #b71c1c)';
+        fightBtn.style.color = 'white';
+        fightBtn.style.border = '2px solid #fff';
+        fightBtn.style.borderRadius = '10px';
+        fightBtn.style.cursor = 'pointer';
+        fightBtn.style.boxShadow = '0 0 10px rgba(255, 0, 0, 0.5)';
+        fightBtn.onclick = () => {
+            this.startBattle();
+        };
+        overlay.appendChild(fightBtn);
+
+        // Shop Container (Bottom - Fixed)
+        const shopContainer = document.createElement('div');
+        shopContainer.className = 'army-shop';
+        shopContainer.style.pointerEvents = 'auto';
+        shopContainer.style.position = 'absolute';
+        shopContainer.style.bottom = '20px';
+        shopContainer.style.left = '50%';
+        shopContainer.style.transform = 'translateX(-50%)';
+        shopContainer.style.display = 'flex';
+        shopContainer.style.gap = '15px';
+        shopContainer.style.background = 'rgba(0,0,0,0.6)';
+        shopContainer.style.padding = '15px';
+        shopContainer.style.borderRadius = '15px';
+        overlay.appendChild(shopContainer);
+
+
+
+        document.body.appendChild(overlay);
+        this.armyOverlay = overlay;
+
+        this.renderShop(shopContainer);
+
+        // Hook up 3D Scene callbacks
+        this.gameManager.sceneManager.onArmyDragDrop = (fromR, fromC, toR, toC) => {
+            this.handleArmyDrag(fromR, fromC, toR, toC);
+        };
+    }
+
+    renderShop(container) {
+        Object.values(UNIT_TYPES).forEach(type => {
+            const item = document.createElement('div');
+            item.className = 'shop-item';
+
+            // Icon Container
+            const iconDiv = document.createElement('div');
+            iconDiv.style.fontSize = '2em';
+
+            const iconI = document.createElement('i');
+            // Ensure we have a valid icon class, fallback to sword if missing (debug)
+            iconI.className = type.icon || 'ra ra-sword';
+            iconDiv.appendChild(iconI);
+
+            // Name
+            const nameDiv = document.createElement('div');
+            nameDiv.style.fontWeight = 'bold';
+            nameDiv.textContent = type.name;
+
+            // Cost
+            const costDiv = document.createElement('div');
+            costDiv.style.color = 'gold';
+            costDiv.innerHTML = `<i class="ra ra-gold-bar"></i> ${type.cost}`;
+
+            // Stats
+            const statsDiv = document.createElement('div');
+            statsDiv.style.fontSize = '0.8em';
+            statsDiv.style.color = '#aaa';
+            statsDiv.textContent = `ATK: ${type.stats.attack}`;
+
+            item.appendChild(iconDiv);
+            item.appendChild(nameDiv);
+            item.appendChild(costDiv);
+            item.appendChild(statsDiv);
+
+            item.onclick = () => {
+                const bought = this.gameManager.armyManager.buyUnit(type.id);
+                if (bought) {
+                    // Refresh 3D View
+                    this.gameManager.sceneManager.rebuildArmyScene(this.gameManager.armyManager.grid);
+                    this.updateArmyValue();
+                } else {
+                    item.style.backgroundColor = 'red';
+                    setTimeout(() => item.style.backgroundColor = '', 200);
+                }
+            };
+            container.appendChild(item);
+        });
+    }
+
+    handleArmyDrag(fromR, fromC, toR, toC) {
+        if (fromR === toR && fromC === toC) return;
+
+        const success = this.gameManager.armyManager.moveUnit(fromR, fromC, toR, toC);
+        if (success) {
+            this.gameManager.sceneManager.rebuildArmyScene(this.gameManager.armyManager.grid);
+            this.updateArmyValue();
+        }
+    }
+
+    updateArmyValue() {
+        if (this.armyOverlay) {
+            const valDisplay = this.armyOverlay.querySelector('#army-value-display');
+            if (valDisplay) valDisplay.textContent = `Army Power: ${this.gameManager.armyManager.armyValue}`;
+        }
+    }
+
+    // --- Quest UI & Requests UI ---
+
+    toggleRequests() {
+        if (this.requestsPanel.style.display === 'none') {
+            this.requestsPanel.style.display = 'block';
+            // Close Quest Log if open
+            if (this.questLogOverlay) {
+                this.questLogOverlay.remove();
+                this.questLogOverlay = null;
+            }
+        } else {
+            this.requestsPanel.style.display = 'none';
+        }
+    }
+
+    toggleQuestLog() {
+        if (this.questLogOverlay) {
+            this.closeQuestLog();
+        } else {
+            this.showQuestLog();
+            // Close Requests Panel
+            if (this.requestsPanel) {
+                this.requestsPanel.style.display = 'none';
+            }
+        }
+    }
+
+    closeQuestLog() {
+        if (this.questLogOverlay) {
+            this.questLogOverlay.remove();
+            this.questLogOverlay = null;
+        }
+        if (this.questUiInterval) {
+            clearInterval(this.questUiInterval);
+            this.questUiInterval = null;
+        }
+    }
+
+    showQuestLog() {
+        // Clear any existing
+        this.closeQuestLog();
+
+        const overlay = document.createElement('div');
+        overlay.className = 'quest-log-overlay ui-element';
+
+        // Initial render
+        this.renderQuestContent(overlay);
+
+        this.container.appendChild(overlay);
+        this.questLogOverlay = overlay;
+
+        // Auto-refresh every 2 seconds
+        this.questUiInterval = setInterval(() => {
+            if (this.questLogOverlay) {
+                // Force check conditions
+                this.gameManager.questManager.update();
+                // Re-render
+                this.renderQuestContent(this.questLogOverlay);
+            } else {
+                this.closeQuestLog();
+            }
+        }, 2000);
+    }
+
+    renderQuestContent(overlay) {
+        if (!overlay) return;
+        const qm = this.gameManager.questManager;
+        const quest = qm.activeQuest;
+
+        let content = '';
+        if (!quest) {
+            content = '<div class="quest-none">No active quests. You have conquered all challenges!</div>';
+        } else {
+            const subQuestsHtml = quest.subQuests.map(sq => {
+                const isDone = qm.isSubQuestCompleted(sq.id);
+                // Force re-check for UI state
+                const canComplete = !isDone && qm.checkCondition(sq);
+
+                let actionBtn = '';
+                if (!isDone) {
+                    if (sq.type === 'RESOURCE') {
+                        actionBtn = `<button class="quest-action-btn" ${canComplete ? '' : 'disabled'} onclick="window.game.uiManager.handleQuestAction('${sq.id}')">Donate</button>`;
+                    } else if (sq.type === 'BATTLE' || sq.type === 'MONSTER') {
+                        actionBtn = `<button class="quest-action-btn battle" onclick="window.game.uiManager.handleQuestAction('${sq.id}')">Fight</button>`;
+                    } else if (sq.type === 'CHECK') {
+                        actionBtn = `<button class="quest-action-btn" ${canComplete ? '' : 'disabled'} onclick="window.game.uiManager.handleQuestAction('${sq.id}')">Check</button>`;
+                    }
+                }
+
+                return `
+                    <div class="sub-quest-item ${isDone ? 'completed' : ''}">
+                        <div class="sq-text">
+                            <i class="${isDone ? 'ra ra-checkbox-tree' : 'ra ra-checkbox-unchecked'}"></i>
+                            ${sq.text}
+                        </div>
+                        <div class="sq-reward">Reward: ${this.formatReward(sq.reward)}</div>
+                        <div class="sq-action">
+                            ${isDone ? '<span class="sq-done-text">Done</span>' : actionBtn}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            content = `
+                <div class="quest-header">
+                    <h2>Quest</h2>
+                </div>
+                <div class="quest-rewards-main">
+                    Completion: ${this.formatReward(quest.rewards)}
+                </div>
+                <div class="sub-quests-list">
+                    ${subQuestsHtml}
+                </div>
+            `;
+        }
+
+        // We replace the inner content wrapper if it exists, or create full structure
+        // But since we are likely updating, let's just wipe and set innerHTML of overlay
+        overlay.innerHTML = `
+            <div class="quest-log-paper">
+                <div class="quest-content">
+                    ${content}
+                </div>
+            </div>
+        `;
+    }
+
+    formatReward(reward) {
+        if (!reward) return '';
+        let str = [];
+        if (reward.solidi) str.push(`${reward.solidi} Solidi`);
+        if (reward.exp) str.push(`${reward.exp} XP`);
+        if (reward.item) str.push(`${reward.item}`);
+        if (reward.wood) str.push(`${reward.wood} Wood`);
+        if (reward.stone) str.push(`${reward.stone} Stone`);
+        if (reward.iron) str.push(`${reward.iron} Iron`);
+        if (reward.food) str.push(`${reward.food} Food`);
+        return str.join(', ');
+    }
+
+    handleQuestAction(subQuestId) {
+        const qm = this.gameManager.questManager;
+        const sq = qm.activeQuest.subQuests.find(s => s.id === subQuestId);
+
+        if (sq.type === 'BATTLE' || sq.type === 'MONSTER') {
+            // Trigger Battle
+            // Close Quest Log
+            this.toggleQuestLog();
+            qm.startBattleForQuest(subQuestId);
+        } else {
+            // Instant completion (Resource or Check)
+            const success = qm.completeSubQuest(subQuestId);
+            if (success) {
+                // UI update automatically triggered via updateQuestUI -> but since we are inside the log, we might want to refresh it locally
+                this.updateQuestUI();
+            } else {
+                // Show feedback?
+                alert("Requirements not met!");
+            }
+        }
+    }
+
+    updateQuestUI() {
+        // Redraw log if open
+        if (this.questLogOverlay) {
+            this.questLogOverlay.remove();
+            this.questLogOverlay = null;
+            this.showQuestLog();
+        }
+        this.updateQuestIcon();
+    }
+
+    updateQuestIcon() {
+        if (this.questBtn) {
+            const hasAvailable = this.gameManager.questManager.activeQuest?.subQuests.some(sq =>
+                !this.gameManager.questManager.isSubQuestCompleted(sq.id) &&
+                this.gameManager.questManager.checkCondition(sq)
+            );
+
+            if (hasAvailable) {
+                this.questBtn.classList.add('has-update');
+            } else {
+                this.questBtn.classList.remove('has-update');
+            }
+        }
+    }
+
+    startBattle() {
+        // 1. Prepare Data
+        // Flatten army grid into list
+        const armyList = this.gameManager.armyManager.getAllUnits();
+
+        if (armyList.length === 0) {
+            alert("Recruit some units first!");
+            return;
+        }
+
+        // Generate Enemy Army (Simpler version of previous logic)
+        const totalPower = this.gameManager.armyManager.armyValue;
+        const enemyList = [];
+        let enemyPower = 0;
+
+        // Ensure at least 1 enemy
+        while (enemyPower < totalPower * 0.8 || enemyList.length < 1) {
+            const types = Object.keys(UNIT_TYPES);
+            const type = types[Math.floor(Math.random() * types.length)];
+            const def = UNIT_TYPES[type];
+            enemyList.push({
+                ...def,
+                level: 1, // Basic enemies for now
+                stats: def.stats // Pass stats directly
+            });
+            enemyPower += def.stats.attack + def.stats.health;
+            if (enemyPower > totalPower * 1.5) break;
+        }
+
+        // 2. Clear UI Overlay
+        if (this.armyOverlay) {
+            document.body.removeChild(this.armyOverlay);
+            this.armyOverlay = null; // Clear ref
+        }
+
+        // 3. Switch Scene
+        this.gameManager.sceneManager.switchToBattle(armyList, enemyList, (victory, deadUnits) => {
+            this.endBattle(victory, deadUnits);
+        });
+
+        // 4. Show Battle HUD
+        this.showBattleHUD();
+    }
+
+    showBattleHUD() {
+        const overlay = document.createElement('div');
+        overlay.className = 'battle-hud';
+        overlay.style.position = 'absolute';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.pointerEvents = 'none';
+
+        const retreatBtn = document.createElement('button');
+        retreatBtn.textContent = 'RETREAT / END';
+        retreatBtn.className = 'btn close-btn';
+        retreatBtn.style.pointerEvents = 'auto';
+        retreatBtn.style.position = 'absolute';
+        retreatBtn.style.top = '20px';
+        retreatBtn.style.right = '20px';
+        retreatBtn.onclick = () => {
+            this.gameManager.sceneManager.battleOver = true; // Force stop
+            // Treat as defeat or just end? Let's say defeat for now if retreat
+            // Also need to capture current state if possible, but simplest is 
+            // just to accept current casualties.
+            const deadUnits = this.gameManager.sceneManager.combatants
+                .filter(c => c.side === 'player' && c.hp <= 0)
+                .map(c => c.data);
+            this.endBattle(false, deadUnits);
+        };
+        overlay.appendChild(retreatBtn);
+
+        document.body.appendChild(overlay);
+        this.battleOverlay = overlay;
+    }
+
+    endBattle(victory, deadUnits = []) {
+        if (this.battleOverlay) {
+            document.body.removeChild(this.battleOverlay);
+            this.battleOverlay = null;
+        }
+
+        // Process Casualties
+        if (deadUnits.length > 0) {
+            console.log(`Lost ${deadUnits.length} units in battle.`);
+            deadUnits.forEach(u => {
+                // Remove from Army Grid
+                // We need the original coordinates. 
+                // The 'data' object passed back is the original unit object from ArmyManager
+                this.gameManager.armyManager.removeUnit(u.r, u.c);
+            });
+        }
+
+        if (victory) {
+            // alert(`VICTORY! You earned 500 Solidi! \nLost Units: ${deadUnits.length}`);
+            this.gameManager.resources.solidi += 500;
+            this.gameManager.notify(); // Update resources
+            this.showPopup(`<strong>VICTORY!</strong><br>You earned 500 Solidi!<br>Lost Units: ${deadUnits.length}`, () => {
+                this.showArmyUI();
+            });
+        } else {
+            // alert(`DEFEAT! Regroup and try again. \nLost Units: ${deadUnits.length}`);
+            this.showPopup(`<strong>DEFEAT!</strong><br>Regroup and try again.<br>Lost Units: ${deadUnits.length}`, () => {
+                this.showArmyUI();
+            });
+        }
+    }
+
+    // --- Custom Popup System ---
+    showPopup(message, onConfirm = null) {
+        console.log("UIManager: showPopup called with message:", message);
+
+        // Remove existing if any
+        if (this.currentPopup) {
+            this.currentPopup.remove();
+        }
+
+        const overlay = document.createElement('div');
+        overlay.className = 'popup-overlay ui-element';
+        // Inline styles to bypass potential CSS cache issues
+        overlay.style.position = 'absolute';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.background = 'rgba(0, 0, 0, 0.8)';
+        overlay.style.display = 'flex';
+        overlay.style.justifyContent = 'center';
+        overlay.style.alignItems = 'center';
+        overlay.style.zIndex = '10000'; // Very high z-index
+
+        const box = document.createElement('div');
+        box.className = 'popup-box';
+        box.style.background = '#1a1a1a';
+        box.style.border = '2px solid #ffd700';
+        box.style.padding = '20px';
+        box.style.borderRadius = '10px';
+        box.style.textAlign = 'center';
+        box.style.color = 'white';
+        box.style.minWidth = '300px';
+
+        const msg = document.createElement('div');
+        msg.className = 'popup-message';
+        msg.style.marginBottom = '20px';
+        msg.style.fontSize = '1.2em';
+        // Allow HTML for bolding keywords etc
+        msg.innerHTML = message;
+
+        const btn = document.createElement('button');
+        btn.className = 'popup-btn';
+        btn.textContent = 'OK';
+        btn.style.padding = '10px 30px';
+        btn.style.fontSize = '1.1em';
+        btn.style.cursor = 'pointer';
+
+        btn.onclick = () => {
+            console.log("UIManager: Popup OK clicked");
+            overlay.remove();
+            this.currentPopup = null;
+            if (onConfirm) onConfirm();
+        };
+
+        box.appendChild(msg);
+        box.appendChild(btn);
+        overlay.appendChild(box);
+        this.container.appendChild(overlay);
+
+        console.log("UIManager: Popup appended to container", this.container);
+        this.currentPopup = overlay;
     }
 }

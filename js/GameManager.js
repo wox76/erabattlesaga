@@ -1,7 +1,18 @@
-import { GENERALS, BUILDINGS, RESOURCES, EXPLORATION_TYPES, REQUEST_TEMPLATES } from './data.js';
+import { GENERALS, BUILDINGS, RESOURCES, EXPLORATION_TYPES, REQUEST_TEMPLATES, UNIT_TYPES } from './data.js';
+import { ArmyManager } from './ArmyManager.js';
+import { QuestManager } from './QuestManager.js';
+import { BattleManager } from './BattleManager.js';
+import { SceneManager } from './SceneManager.js';
 
 export class GameManager {
     constructor() {
+        this.listeners = []; // Initialize listeners first!
+
+        this.armyManager = new ArmyManager(this);
+        this.questManager = new QuestManager(this);
+        this.battleManager = new BattleManager(this);
+        // SceneManager will be assigned by Main
+
         this.resources = {
             solidi: 500,
             wood: 200,
@@ -33,8 +44,6 @@ export class GameManager {
 
         this.activeRequests = [];
         this.explorers = {}; // Map of resourceType -> endTime
-
-        this.listeners = [];
 
         // Request generation
         this.lastRequestTime = Date.now();
@@ -134,6 +143,14 @@ export class GameManager {
 
         this.productionRates = prod;
         this.notify();
+    }
+
+    updateResource(type, amount) {
+        console.log(`Updating resource: ${type} by ${amount}`);
+        if (this.resources[type] !== undefined) {
+            this.resources[type] += amount;
+            this.notify();
+        }
     }
 
     checkConstruction() {

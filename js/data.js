@@ -301,3 +301,46 @@ export const EXPLORATION_TYPES = {
         max: 50
     }
 };
+
+export const UNIT_TYPES = {
+    soldier: {
+        id: 'soldier',
+        name: 'Soldier',
+        description: 'Basic infantry unit.',
+        cost: 100,
+        stats: { attack: 10, health: 50, speed: 1 },
+        icon: 'ra ra-sword',
+        tier: 1,
+        mergeObj: 'soldier'
+    },
+    archer: {
+        id: 'archer',
+        name: 'Archer',
+        description: 'Ranged unit.',
+        cost: 150,
+        stats: { attack: 15, health: 30, speed: 1.2 },
+        icon: 'ra ra-archer',
+        tier: 1,
+        mergeObj: 'archer'
+    },
+    knight: {
+        id: 'knight',
+        name: 'Knight',
+        description: 'Mounted unit.',
+        cost: 300,
+        stats: { attack: 25, health: 80, speed: 2 },
+        icon: 'ra ra-knight-helmet',
+        tier: 2,
+        mergeObj: 'knight'
+    },
+    hero: {
+        id: 'hero',
+        name: 'Hero',
+        description: 'Powerful leader.',
+        cost: 1000,
+        stats: { attack: 100, health: 500, speed: 1.5 },
+        icon: 'ra ra-broken-skull',
+        tier: 3,
+        mergeObj: 'hero'
+    }
+};

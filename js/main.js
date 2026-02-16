@@ -10,8 +10,18 @@ window.addEventListener('DOMContentLoaded', () => {
     const sceneManager = new SceneManager(canvas);
     const gameManager = new GameManager();
 
+    // Link them
+    gameManager.sceneManager = sceneManager;
+
     // Pass gameManager to UI (already correct)
     const uiManager = new UIManager(gameManager);
+
+    // Expose for debug/UI interactions (Required for inline onclicks in UIManager)
+    window.game = {
+        gameManager,
+        sceneManager,
+        uiManager
+    };
 
     // Hook up Interaction
     sceneManager.onBuildingClick = (buildingId) => {
