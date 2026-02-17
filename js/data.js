@@ -361,3 +361,35 @@ export const UNIT_TYPES = {
         mergeObj: 'hero'
     }
 };
+
+export const SPELLS = {
+    fireball: {
+        id: 'fireball',
+        name: 'spell.fireball.name',
+        desc: 'spell.fireball.desc',
+        icon: 'ra ra-burning-meteor',
+        cooldown: 10000,
+        color: 0xff4400,
+        damage: 50,
+        radius: 15
+    },
+    fury: {
+        id: 'fury',
+        name: 'spell.fury.name',
+        desc: 'spell.fury.desc',
+        icon: 'ra ra-muscle-up',
+        cooldown: 20000,
+        duration: 10000,
+        color: 0xff0000,
+        multiplier: 2.0 // Double damage
+    },
+    block: {
+        id: 'block',
+        name: 'spell.block.name',
+        desc: 'spell.block.desc',
+        icon: 'ra ra-ice-cube',
+        cooldown: 25000,
+        duration: 5000,
+        color: 0x00aaff
+    }
+};

@@ -100,7 +100,7 @@ export class ArmyManager {
         // Stat boost (e.g. +50% per level)
         targetUnit.stats.attack = Math.floor(targetUnit.stats.attack * 1.5);
         targetUnit.stats.health = Math.floor(targetUnit.stats.health * 1.5);
-        
+
         console.log(`Merged! Unit Level ${targetUnit.level}`);
         this.calculateArmyValue();
     }
@@ -126,7 +126,7 @@ export class ArmyManager {
     }
 
     // --- Combat Logic Helpers ---
-    
+
     getAllUnits() {
         const units = [];
         for (let r = 0; r < this.gridSize; r++) {
@@ -135,5 +135,40 @@ export class ArmyManager {
             }
         }
         return units;
+    }
+    // --- Persistence ---
+
+    exportState() {
+        // Return grid configuration
+        // We only need to save units, not empty slots
+        const units = [];
+        for (let r = 0; r < this.gridSize; r++) {
+            for (let c = 0; c < this.gridSize; c++) {
+                if (this.grid[r][c]) {
+                    units.push(this.grid[r][c]);
+                }
+            }
+        }
+        return {
+            armyValue: this.armyValue,
+            units: units
+        };
+    }
+
+    importState(data) {
+        // Clear grid
+        this.grid = Array(this.gridSize).fill().map(() => Array(this.gridSize).fill(null));
+        this.armyValue = 0;
+
+        if (!data || !data.units) return;
+
+        data.units.forEach(u => {
+            if (u.r < this.gridSize && u.c < this.gridSize) {
+                this.grid[u.r][u.c] = u;
+            }
+        });
+
+        this.calculateArmyValue();
+        this.gameManager.notify();
     }
 }

@@ -1,4 +1,4 @@
-import { GENERALS, BUILDINGS, EXPLORATION_TYPES, RESOURCES, UNIT_TYPES } from './data.js';
+import { GENERALS, BUILDINGS, EXPLORATION_TYPES, RESOURCES, UNIT_TYPES, SPELLS } from './data.js';
 import { t } from './i18n.js';
 
 export class UIManager {
@@ -35,6 +35,26 @@ export class UIManager {
         logo.className = 'game-logo';
         logo.alt = 'Era Total War Saga';
 
+        if (this.gameManager.hasSaveGame()) {
+            const continueBtn = document.createElement('button');
+            continueBtn.className = 'start-game-btn';
+            continueBtn.style.marginBottom = '20px';
+            continueBtn.textContent = t('ui.continue');
+            continueBtn.onclick = () => {
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen().catch(e => {
+                        console.log("Fullscreen denied", e);
+                    });
+                }
+                if (this.gameManager.loadGame()) {
+                    this.showGameUI();
+                } else {
+                    alert('Failed to load save!');
+                }
+            };
+            screen.appendChild(continueBtn);
+        }
+
         const startBtn = document.createElement('button');
         startBtn.className = 'start-game-btn';
         startBtn.textContent = t('ui.start');
@@ -48,8 +68,26 @@ export class UIManager {
             this.showSelectionScreen();
         };
 
+
+        const resetBtn = document.createElement('button');
+        resetBtn.className = 'start-game-btn'; // Re-use style or new 'reset-data-btn'
+        resetBtn.style.marginTop = '10px';
+        resetBtn.style.fontSize = '0.8em';
+        resetBtn.style.background = '#333';
+        resetBtn.style.border = '1px solid #666';
+        resetBtn.innerHTML = `<i class="ra ra-skull"></i> ${t('ui.delete_save')}`;
+        resetBtn.onclick = () => {
+            if (confirm(t('ui.confirm') + ' ' + t('ui.delete_save') + '?')) {
+                this.gameManager.resetGame();
+            }
+        };
+
         screen.appendChild(logo);
         screen.appendChild(startBtn);
+        if (this.gameManager.hasSaveGame()) {
+            screen.appendChild(resetBtn); // Only show if there is data to reset? Or always? User said "all'inizio".
+        }
+
         this.container.appendChild(screen);
     }
 
@@ -308,6 +346,9 @@ export class UIManager {
         reqBtn.title = t('ui.requests');
         reqBtn.onclick = () => this.toggleRequests();
         hudButtons.appendChild(reqBtn);
+
+        // Save/Reset Buttons REMOVED for Auto-Save
+
 
         // Quests Button (Scroll Icon)
         const questBtn = document.createElement('button');
@@ -812,7 +853,7 @@ export class UIManager {
         fightBtn.style.cursor = 'pointer';
         fightBtn.style.boxShadow = '0 0 10px rgba(255, 0, 0, 0.5)';
         fightBtn.onclick = () => {
-            this.startBattle();
+            this.startBattle(); // Ensure this method exists!
         };
         overlay.appendChild(fightBtn);
 
@@ -831,8 +872,6 @@ export class UIManager {
         shopContainer.style.borderRadius = '15px';
         overlay.appendChild(shopContainer);
 
-
-
         document.body.appendChild(overlay);
         this.armyOverlay = overlay;
 
@@ -842,6 +881,111 @@ export class UIManager {
         this.gameManager.sceneManager.onArmyDragDrop = (fromR, fromC, toR, toC) => {
             this.handleArmyDrag(fromR, fromC, toR, toC);
         };
+    }
+
+    // --- BATTLE UI ---
+
+    showBattleUI() {
+        this.clear();
+        this.currentScreen = 'battle';
+        this.container.style.pointerEvents = 'none'; // Click through to canvas
+
+        // Battle UI Container (Left Side)
+        const battlePanel = document.createElement('div');
+        battlePanel.className = 'battle-panel';
+        battlePanel.style.position = 'absolute';
+        battlePanel.style.left = '20px';
+        battlePanel.style.top = '50%';
+        battlePanel.style.transform = 'translateY(-50%)';
+        battlePanel.style.display = 'flex';
+        battlePanel.style.flexDirection = 'column';
+        battlePanel.style.gap = '15px';
+        battlePanel.style.pointerEvents = 'auto'; // Enable clicks on buttons
+
+        Object.values(SPELLS).forEach(spell => {
+            const btnContainer = document.createElement('div');
+            btnContainer.style.position = 'relative';
+            btnContainer.style.width = '60px';
+            btnContainer.style.height = '60px';
+
+            const btn = document.createElement('button');
+            btn.className = 'spell-btn'; // We'll add some CSS later or inline it
+            btn.innerHTML = `<i class="${spell.icon}"></i>`;
+            btn.title = `${t(spell.name)}: ${t(spell.desc)}`;
+            btn.style.width = '100%';
+            btn.style.height = '100%';
+            btn.style.borderRadius = '50%';
+            btn.style.border = `2px solid #${spell.color.toString(16)}`;
+            btn.style.background = 'rgba(0,0,0,0.7)';
+            btn.style.color = '#fff';
+            btn.style.fontSize = '24px';
+            btn.style.cursor = 'pointer';
+            btn.style.overflow = 'hidden';
+            btn.style.position = 'relative';
+
+            // Cooldown Overlay
+            const cdOverlay = document.createElement('div');
+            cdOverlay.className = 'cd-overlay';
+            cdOverlay.id = `cd-${spell.id}`;
+            cdOverlay.style.position = 'absolute';
+            cdOverlay.style.bottom = '0';
+            cdOverlay.style.left = '0';
+            cdOverlay.style.width = '100%';
+            cdOverlay.style.height = '0%';
+            cdOverlay.style.background = 'rgba(0,0,0,0.8)';
+            cdOverlay.style.pointerEvents = 'none';
+            cdOverlay.style.transition = 'height 0.1s linear';
+
+            btn.appendChild(cdOverlay);
+
+            btn.onclick = () => {
+                const success = this.gameManager.sceneManager.activateSpell(spell.id);
+                if (success) {
+                    // Visual feedback (click)
+                    btn.style.transform = 'scale(0.9)';
+                    setTimeout(() => btn.style.transform = 'scale(1)', 100);
+                }
+            };
+
+            btnContainer.appendChild(btn);
+            battlePanel.appendChild(btnContainer);
+        });
+
+        this.container.appendChild(battlePanel);
+
+        // Start UI Update Loop for Cooldowns
+        if (this.battleInterval) clearInterval(this.battleInterval);
+        this.battleInterval = setInterval(() => this.updateBattleUI(), 100);
+    }
+
+    hideBattleUI() {
+        if (this.battleInterval) {
+            clearInterval(this.battleInterval);
+            this.battleInterval = null;
+        }
+        this.showGameUI(); // Return to Game UI
+    }
+
+    updateBattleUI() {
+        const sm = this.gameManager.sceneManager;
+        if (sm.mode !== 'BATTLE') return;
+
+        const spellState = sm.spellState || {};
+        const now = Date.now();
+
+        Object.values(SPELLS).forEach(spell => {
+            const overlay = document.getElementById(`cd-${spell.id}`);
+            if (overlay) {
+                const state = spellState[spell.id];
+                if (state && state.readyTime > now) {
+                    const remaining = state.readyTime - now;
+                    const pct = (remaining / spell.cooldown) * 100;
+                    overlay.style.height = `${pct}%`;
+                } else {
+                    overlay.style.height = '0%';
+                }
+            }
+        });
     }
 
     renderShop(container) {

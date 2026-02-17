@@ -72,6 +72,13 @@ export class GameManager {
         this.constructBuilding('palace', true);
         this.startLoop();
         this.startPassiveXpLoop();
+
+        // Auto-Save Interval (30s)
+        setInterval(() => {
+            if (this.hasSaveGame() || this.resources.solidi > 0) { // Don't save empty states unnecessarily
+                this.saveGame();
+            }
+        }, 30000);
     }
 
     startLoop() {
@@ -229,6 +236,7 @@ export class GameManager {
                     if (req) {
                         this.completeRequest(req);
                     }
+                    this.saveGame();
                 }
             }
         });
@@ -239,6 +247,7 @@ export class GameManager {
     completeRequest(req) {
         req.status = 'completed';
         if (req.reward.solidi) this.resources.solidi += req.reward.solidi;
+        this.saveGame();
         this.notify();
 
         setTimeout(() => {
@@ -396,6 +405,7 @@ export class GameManager {
         }
 
         this.notify();
+        this.saveGame();
         return newBuilding;
     }
 
@@ -447,6 +457,7 @@ export class GameManager {
         b.isUpgrading = true;
 
         this.notify();
+        this.saveGame();
         return true;
     }
 
@@ -462,6 +473,7 @@ export class GameManager {
             endTime: Date.now() + def.time,
             def: def
         };
+        this.saveGame();
         this.notify();
     }
 
@@ -478,6 +490,7 @@ export class GameManager {
                 } else {
                     console.log(`Explorer failed to find ${type}`);
                 }
+                this.saveGame();
                 this.notify();
             }
         }
@@ -512,5 +525,91 @@ export class GameManager {
             b.workers--;
             this.notify();
         }
+    }
+
+    // --- Persistence ---
+
+    hasSaveGame() {
+        return !!localStorage.getItem('etws_save_data');
+    }
+
+    saveGame() {
+        const data = {
+            resources: this.resources,
+            buildings: this.buildings,
+            selectedGeneral: this.selectedGeneral ? this.selectedGeneral.id : null,
+            generalStats: this.generalStats,
+            activeRequests: this.activeRequests,
+            explorers: this.explorers,
+            lastRequestTime: this.lastRequestTime,
+            army: this.armyManager.exportState(),
+            quests: this.questManager.exportState(),
+            timestamp: Date.now()
+        };
+        localStorage.setItem('etws_save_data', JSON.stringify(data));
+        console.log("Game Saved");
+        return true;
+    }
+
+    loadGame() {
+        const json = localStorage.getItem('etws_save_data');
+        if (!json) return false;
+
+        try {
+            const data = JSON.parse(json);
+
+            this.resources = data.resources;
+            this.buildings = data.buildings;
+
+            if (data.selectedGeneral) {
+                this.selectedGeneral = GENERALS.find(g => g.id === data.selectedGeneral);
+            }
+
+            this.generalStats = data.generalStats || { level: 1, xp: 0, nextLevelXp: 1000 };
+            this.activeRequests = data.activeRequests || [];
+            this.explorers = data.explorers || {};
+            this.lastRequestTime = data.lastRequestTime || Date.now();
+
+            // Managers
+            if (data.army) this.armyManager.importState(data.army);
+            if (data.quests) this.questManager.importState(data.quests); // This triggers UI update for quests
+
+            // Rebuild Grid
+            this.rebuildGrid();
+
+            // Start Loops
+            this.startLoop();
+            this.startPassiveXpLoop();
+
+            this.notify();
+            return true;
+        } catch (e) {
+            console.error("Failed to load save:", e);
+            return false;
+        }
+    }
+
+    resetGame() {
+        localStorage.removeItem('etws_save_data');
+        location.reload();
+    }
+
+    rebuildGrid() {
+        this.grid = Array(this.gridSize).fill().map(() => Array(this.gridSize).fill(null));
+        this.buildings.forEach(b => {
+            // Handle potential missing data if save is old (though this is new feature)
+            const width = b.width || 1;
+            const depth = b.depth || 1;
+
+            for (let dz = 0; dz < depth; dz++) {
+                for (let dx = 0; dx < width; dx++) {
+                    const z = b.gridZ + dz;
+                    const x = b.gridX + dx;
+                    if (z < this.gridSize && x < this.gridSize) {
+                        this.grid[z][x] = b.id;
+                    }
+                }
+            }
+        });
     }
 }

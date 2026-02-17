@@ -23,6 +23,9 @@ export class BattleManager {
         this.gameManager.sceneManager.switchToBattle(playerArmy, enemyArmy, (isVictory, deadUnits) => {
             this.handleBattleEnd(isVictory, deadUnits, onWinCallback);
         });
+
+        // 4. Show Battle UI
+        this.gameManager.uiManager.showBattleUI();
     }
 
     generateEnemyArmy(power, name) {
@@ -79,6 +82,9 @@ export class BattleManager {
 
     handleBattleEnd(isVictory, deadUnits, onWinCallback) {
         console.log(`Battle Ended. Victory: ${isVictory}`);
+
+        // Hide Battle UI
+        this.gameManager.uiManager.hideBattleUI();
 
         try {
             // Remove dead units from player army

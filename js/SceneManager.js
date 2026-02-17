@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { BUILDINGS, UNIT_TYPES } from './data.js';
+import { BUILDINGS, UNIT_TYPES, SPELLS } from './data.js';
 
 export class SceneManager {
     constructor(canvas) {
@@ -664,6 +664,132 @@ export class SceneManager {
         enemyArmy.forEach(u => spawnUnit(u, 'enemy', 50));
     }
 
+    // --- SPELLS & ABILITIES ---
+
+    activateSpell(spellId) {
+        if (this.mode !== 'BATTLE' || this.battleOver) return false;
+
+        // Initialize spell state if needed
+        if (!this.spellState) this.spellState = {};
+        const now = Date.now();
+
+        // Check Cooldown
+        if (this.spellState[spellId] && now < this.spellState[spellId].readyTime) {
+            console.log("Spell on cooldown");
+            return false;
+        }
+
+        const spell = SPELLS[spellId];
+        if (!spell) return false;
+
+        console.log(`Activating Spell: ${spell.name}`);
+        this.spellState[spellId] = { readyTime: now + spell.cooldown };
+
+        // --- SPELL EFFECTS ---
+
+        if (spellId === 'fireball') {
+            // Find a cluster of enemies? Or just random enemy?
+            // VISUAL: Launcher from camera or sky? Let's say sky.
+            // LOGIC: Instant damage in radius.
+
+            const enemies = this.combatants.filter(c => c.side === 'enemy' && c.hp > 0);
+            if (enemies.length > 0) {
+                // Target random enemy
+                const target = enemies[Math.floor(Math.random() * enemies.length)];
+                const pos = target.mesh.position.clone();
+
+                // Visual: Sphere dropping
+                const geo = new THREE.SphereGeometry(2);
+                const mat = new THREE.MeshBasicMaterial({ color: 0xff4400 });
+                const projectile = new THREE.Mesh(geo, mat);
+                projectile.position.set(pos.x, 50, pos.z);
+                this.battleGroup.add(projectile);
+
+                // Animate Drop
+                const duration = 500;
+                const start = Date.now();
+
+                const animateFireball = () => {
+                    const p = (Date.now() - start) / duration;
+                    if (p < 1) {
+                        projectile.position.y = 50 * (1 - p);
+                        requestAnimationFrame(animateFireball);
+                    } else {
+                        // Impact
+                        this.battleGroup.remove(projectile);
+                        // Explosion Visual
+                        this.createExplosion(pos, spell.color);
+
+                        // Damage Logic
+                        enemies.forEach(e => {
+                            if (e.mesh.position.distanceTo(pos) <= spell.radius) {
+                                e.hp -= spell.damage;
+                                this.updateUnitVisuals(e);
+                            }
+                        });
+                    }
+                };
+                animateFireball();
+            }
+        } else if (spellId === 'fury') {
+            // Buff Player Units
+            this.combatants.forEach(c => {
+                if (c.side === 'player' && c.hp > 0) {
+                    c.buffs = c.buffs || {};
+                    c.buffs.fury = Date.now() + spell.duration;
+                    // Visual: Red Glow
+                    c.material.emissive.setHex(0xff0000);
+                }
+            });
+        } else if (spellId === 'block') {
+            // Debuff Enemy Units
+            this.combatants.forEach(c => {
+                if (c.side === 'enemy' && c.hp > 0) {
+                    c.debuffs = c.debuffs || {};
+                    c.debuffs.frozen = Date.now() + spell.duration;
+                    // Visual: Blue/Cyan Glow
+                    c.material.emissive.setHex(0x00ffff);
+                }
+            });
+        }
+
+        return true;
+    }
+
+    createExplosion(pos, color) {
+        // Simple expanding sphere
+        const geo = new THREE.SphereGeometry(2);
+        const mat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.8 });
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.copy(pos);
+        this.battleGroup.add(mesh);
+
+        let scale = 1;
+        const animate = () => {
+            scale += 1;
+            mesh.scale.set(scale, scale, scale);
+            mesh.material.opacity -= 0.05;
+            if (mesh.material.opacity > 0) {
+                requestAnimationFrame(animate);
+            } else {
+                this.battleGroup.remove(mesh);
+            }
+        };
+        animate();
+    }
+
+    updateUnitVisuals(unit) {
+        // Update HP bar and visibility
+        if (unit.hp <= 0) {
+            unit.mesh.visible = false;
+        } else {
+            unit.mesh.visible = true;
+            const hpPct = Math.max(0, unit.hp / unit.maxHp);
+            unit.hpBar.scale.x = hpPct;
+            unit.hpBar.material.color.setHex(hpPct > 0.5 ? 0x00ff00 : 0xff0000);
+        }
+    }
+
     updateBattle() {
         if (this.mode !== 'BATTLE' || this.battleOver) return;
 
@@ -672,9 +798,21 @@ export class SceneManager {
         const enemies = [];
         const allAlive = [];
 
+        const now = Date.now();
+
         for (let i = 0; i < this.combatants.length; i++) {
             const c = this.combatants[i];
             if (c.hp > 0) {
+                // Check Buffs/Debuffs expiration
+                if (c.buffs && c.buffs.fury && now > c.buffs.fury) {
+                    delete c.buffs.fury;
+                    c.material.emissive.setHex(0x000000); // Reset glow
+                }
+                if (c.debuffs && c.debuffs.frozen && now > c.debuffs.frozen) {
+                    delete c.debuffs.frozen;
+                    c.material.emissive.setHex(0x000000); // Reset glow
+                }
+
                 if (c.side === 'player') players.push(c);
                 else enemies.push(c);
                 allAlive.push(c);
@@ -706,11 +844,17 @@ export class SceneManager {
         for (let i = 0; i < allAlive.length; i++) {
             const unit = allAlive[i];
 
-            // Handle Flash Timer
+            // Skip if Frozen
+            if (unit.debuffs && unit.debuffs.frozen) continue;
+
+            // Handle Flash Timer (Hit effect)
             if (unit.flashTimer > 0) {
                 unit.flashTimer--;
                 if (unit.flashTimer <= 0) {
-                    unit.material.emissive.setHex(0x000000);
+                    // Restore buff/debuff color if active, else black
+                    if (unit.buffs && unit.buffs.fury) unit.material.emissive.setHex(0xff0000);
+                    else if (unit.debuffs && unit.debuffs.frozen) unit.material.emissive.setHex(0x00ffff);
+                    else unit.material.emissive.setHex(0x000000);
                 }
             }
 
@@ -733,19 +877,17 @@ export class SceneManager {
                 if (realDist <= unit.range) {
                     // Attack
                     if (unit.cooldown <= 0) {
-                        nearest.hp -= unit.atk;
+                        // Calculate Damage
+                        let dmg = unit.atk;
+                        if (unit.buffs && unit.buffs.fury) dmg *= 2.0;
+
+                        nearest.hp -= dmg;
                         unit.cooldown = 20;
 
                         nearest.material.emissive.setHex(0xffffff);
                         nearest.flashTimer = 5;
 
-                        const hpPct = Math.max(0, nearest.hp / nearest.maxHp);
-                        nearest.hpBar.scale.x = hpPct;
-                        nearest.hpBar.material.color.setHex(hpPct > 0.5 ? 0x00ff00 : 0xff0000);
-
-                        if (nearest.hp <= 0) {
-                            nearest.mesh.visible = false;
-                        }
+                        this.updateUnitVisuals(nearest);
 
                         const pushDir = unit.mesh.position.clone().sub(nearest.mesh.position).normalize().multiplyScalar(2);
                         unit.mesh.position.add(pushDir);
@@ -754,7 +896,11 @@ export class SceneManager {
                 } else {
                     // Move
                     const dir = nearest.mesh.position.clone().sub(unit.mesh.position).normalize();
-                    unit.mesh.position.add(dir.multiplyScalar(0.2));
+                    // Speed multiplier
+                    let speed = 0.2;
+                    // if (unit.buffs && unit.buffs.haste) speed *= 1.5; 
+
+                    unit.mesh.position.add(dir.multiplyScalar(speed));
                     unit.mesh.lookAt(nearest.mesh.position);
                 }
             }

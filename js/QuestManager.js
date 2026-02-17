@@ -172,4 +172,45 @@ export class QuestManager {
             this.completeSubQuest(subQuestId);
         });
     }
+    // --- Persistence ---
+    exportState() {
+        return {
+            activeQuestIndex: this.activeQuestIndex,
+            // We need to save the subquests state of the *current* active quest if it's in progress
+            // because `completedSubQuests` set only tracks IDs, but maybe we want to keep partial progress?
+            // Actually `completedSubQuests` is enough if subquests are binary (done/not done).
+            // But if we had counters (e.g. 5/10 wolves), we'd need to save that too.
+            // For now, our subquests are mostly binary (except resource amount, which is checked dynamically against player resources).
+            // So just saving completed IDs is likely enough.
+            completedSubQuests: Array.from(this.completedSubQuests)
+        };
+    }
+
+    importState(data) {
+        if (!data) return;
+
+        this.activeQuestIndex = data.activeQuestIndex || 0;
+        this.completedSubQuests = new Set(data.completedSubQuests || []);
+
+        // Reactivate the quest to load data
+        // We need to make sure we don't reset 'completedSubQuests' when calling activateQuest
+        // So we will modify activateQuest slightly or just set it manually here.
+
+        if (this.activeQuestIndex < QUEST_DATA.length) {
+            this.activeQuest = JSON.parse(JSON.stringify(QUEST_DATA[this.activeQuestIndex]));
+
+            // Restore completion state? 
+            // The `activateQuest` method normally clears `completedSubQuests`. 
+            // We should duplicate logic or just set it.
+            console.log(`Quest Resumed: ${this.activeQuest.title}`);
+
+            // Trigger UI update
+            if (this.gameManager.uiManager) {
+                this.gameManager.uiManager.updateQuestUI();
+            }
+        } else {
+            console.log("All quests completed (Loaded)");
+            this.activeQuest = null;
+        }
+    }
 }
