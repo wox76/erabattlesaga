@@ -17,8 +17,10 @@ export class GameManager {
             solidi: 500,
             wood: 200,
             stone: 100,
+            stone: 100,
             iron: 50,
-            food: 100
+            food: 100,
+            population: 2 // Starting population
         };
         this.buildings = [];
         this.selectedGeneral = null;
@@ -111,20 +113,72 @@ export class GameManager {
         if (!this.selectedGeneral) return;
 
         let prod = { solidi: 0, wood: 0, stone: 0, iron: 0, food: 0 };
+        let maxPop = 0;
 
         this.buildings.forEach(b => {
             if (b.status !== 'active') return; // Only active buildings produce
 
             const def = BUILDINGS[b.type];
             if (def) {
+                // ... production logic existing ...
                 const lvlMult = Math.pow(1.5, (b.level || 1) - 1);
+
+                // Population Cap from Houses
+                if (def.populationCap) {
+                    maxPop += Math.floor(def.populationCap * lvlMult);
+                }
+
                 prod.solidi += def.production.solidi * lvlMult;
                 prod.wood += def.production.wood * lvlMult;
                 prod.stone += def.production.stone * lvlMult;
                 prod.iron += def.production.iron * lvlMult;
                 prod.food += def.production.food * lvlMult;
+
+                // Worker Production
+                if (b.workers > 0 && def.workerProduction) {
+                    if (def.workerProduction.food) prod.food += b.workers * def.workerProduction.food;
+                    if (def.workerProduction.solidi) prod.solidi += b.workers * def.workerProduction.solidi;
+                    if (def.workerProduction.wood) prod.wood += b.workers * def.workerProduction.wood;
+                    if (def.workerProduction.stone) prod.stone += b.workers * def.workerProduction.stone;
+                    if (def.workerProduction.iron) prod.iron += b.workers * def.workerProduction.iron;
+                }
             }
         });
+
+        // MILL EFFFECT (Global Food Bonus)
+        const mill = this.buildings.find(b => b.type === 'mill' && b.status === 'active');
+        if (mill) {
+            prod.food *= 1.2; // 20% Bonus
+        }
+
+        // POPULATION LOGIC
+        // 1. Growth
+        // If enough food (>= 1) and space (pop < maxPop), populate increases
+        // Growth rate: 1 per tick (simple for now)
+        if (this.resources.food >= 1 && this.resources.population < maxPop) {
+            this.resources.population++;
+        }
+
+        // 2. Consumption
+        // Each person consumes 0.2 Food
+        // If food runs out, population dies? For now just stops growing/producing tax?
+        // Let's keep it simple: consume food.
+        const consumption = Math.floor(this.resources.population * 0.2);
+        this.resources.food -= consumption;
+        if (this.resources.food < 0) this.resources.food = 0; // No negative food
+
+        // 3. Tax Revenue
+        // Count Idle Population
+        let totalAssigned = 0;
+        this.buildings.forEach(b => {
+            if (b.workers) totalAssigned += b.workers;
+        });
+
+        const idlePop = Math.max(0, this.resources.population - totalAssigned);
+
+        // Each IDLE person generates 0.2 Solidi
+        const tax = Math.floor(idlePop * 0.2);
+        prod.solidi += tax;
 
         // Apply General Bonuses
         if (this.selectedGeneral.bonus.income) prod.solidi *= this.selectedGeneral.bonus.income;
@@ -312,6 +366,7 @@ export class GameManager {
             depth: b.depth,
             status: time > 0 ? 'constructing' : 'active',
             level: 1, // Start at Level 1
+            workers: 0, // Initialize workers
             startTime: Date.now(),
             endTime: Date.now() + time,
             totalTime: time
@@ -425,6 +480,37 @@ export class GameManager {
                 }
                 this.notify();
             }
+        }
+    }
+    assignWorker(buildingId) {
+        const b = this.buildings.find(b => b.id === buildingId);
+        if (!b) return;
+
+        const def = BUILDINGS[b.type];
+        if (!def.workerSlots) return;
+
+        // Check slots
+        if ((b.workers || 0) >= def.workerSlots) return;
+
+        // Check available population
+        let totalAssigned = 0;
+        this.buildings.forEach(build => {
+            if (build.workers) totalAssigned += build.workers;
+        });
+
+        if (this.resources.population > totalAssigned) {
+            b.workers = (b.workers || 0) + 1;
+            this.notify();
+        }
+    }
+
+    removeWorker(buildingId) {
+        const b = this.buildings.find(b => b.id === buildingId);
+        if (!b) return;
+
+        if ((b.workers || 0) > 0) {
+            b.workers--;
+            this.notify();
         }
     }
 }

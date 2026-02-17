@@ -1,89 +1,90 @@
 export const GENERALS = [
     {
         id: 'astralo',
-        name: 'Astralo',
+        name: 'general.astralo.name',
         image: 'assets/personaggi/astralo.png',
         bonus: {
             materials: 1.2, // +20% Materials production (applies to all: wood, stone, iron)
             morale: 0.9     // -10% Morale (future)
         },
-        description: 'Master of Logistics. +20% Materials, -10% Morale.'
+        description: 'general.astralo.desc'
     },
     {
         id: 'crom',
-        name: 'Crom',
+        name: 'general.crom.name',
         image: 'assets/personaggi/crom.png',
         bonus: {
             attack: 1.2,    // +20% Attack
             materials: 0.9  // -10% Materials production
         },
-        description: 'Warmonger. +20% Attack, -10% Materials.'
+        description: 'general.crom.desc'
     },
     {
         id: 'gerelt',
-        name: 'Gerelt',
+        name: 'general.gerelt.name',
         image: 'assets/personaggi/gerelt.png',
         bonus: {
             speed: 1.2,     // +20% Movement Speed
             income: 0.9     // -10% Income (Solidi)
         },
-        description: 'Swift Strategist. +20% Speed, -10% Income.'
+        description: 'general.gerelt.desc'
     },
     {
         id: 'helena',
-        name: 'Helena',
+        name: 'general.helena.name',
         image: 'assets/personaggi/helena.png',
         bonus: {
             income: 1.2,    // +20% Income
             attack: 0.9     // -10% Attack
         },
-        description: 'Economic Genius. +20% Income, -10% Attack.'
+        description: 'general.helena.desc'
     },
     {
         id: 'ofle',
-        name: 'Ofle',
+        name: 'general.ofle.name',
         image: 'assets/personaggi/ofle.png',
         bonus: {
             materials: 1.1,      // +10% Materials
             constructionTime: 0.8 // -20% Construction Time (multiplier)
         },
-        description: 'Master Builder. +10% Materials, -20% Build Time.'
+        description: 'general.ofle.desc'
     },
     {
         id: 'sonya',
-        name: 'Sonya',
+        name: 'general.sonya.name',
         image: 'assets/personaggi/sonya.png',
         bonus: {
             defense: 1.2,          // +20% Defense
             constructionSpeed: 1.1 // +10% Construction Speed
         },
-        description: 'Defender. +20% Defense, +10% Build Speed.'
+        description: 'general.sonya.desc'
     },
     {
         id: 'talkenbar',
-        name: 'Talkenbar',
+        name: 'general.talkenbar.name',
         image: 'assets/personaggi/talkenbar.png',
         bonus: {
             income: 1.15,   // +15% Income
             armySize: 0.9   // -10% Max Army Size
         },
-        description: 'Merchant Lord. +15% Income, -10% Army Size.'
+        description: 'general.talkenbar.desc'
     }
 ];
 
 export const RESOURCES = {
-    solidi: 'Solidi',
-    wood: 'Wood',
-    stone: 'Stone',
-    iron: 'Iron',
-    food: 'Food'
+    solidi: 'res.solidi',
+    wood: 'res.wood',
+    stone: 'res.stone',
+    iron: 'res.iron',
+    food: 'res.food',
+    population: 'res.population'
 };
 
 export const BUILDINGS = {
     palace: {
         id: 'palace',
-        name: 'Palace',
-        description: 'The seat of power. Generates base resources.',
+        name: 'building.palace.name',
+        description: 'building.palace.desc',
         cost: { solidi: 0, wood: 0, stone: 0, iron: 0 },
         production: { solidi: 2, wood: 1, stone: 1, iron: 1, food: 2 },
         color: 0xff6961, // Pastel Red
@@ -94,10 +95,11 @@ export const BUILDINGS = {
     },
     house: {
         id: 'house',
-        name: 'House',
-        description: 'Increases population cap and tax revenue.',
+        name: 'building.house.name',
+        description: 'building.house.desc',
         cost: { solidi: 50, wood: 50, stone: 0, iron: 0 },
-        production: { solidi: 1, wood: 0, stone: 0, iron: 0, food: 0 },
+        production: { solidi: 0, wood: 0, stone: 0, iron: 0, food: 0 },
+        populationCap: 5,
         color: 0x77dd77, // Pastel Green
         width: 1,
         depth: 1,
@@ -106,8 +108,8 @@ export const BUILDINGS = {
     },
     woodcutter: {
         id: 'woodcutter',
-        name: 'Woodcutter',
-        description: 'Produces Wood.',
+        name: 'building.woodcutter.name',
+        description: 'building.woodcutter.desc',
         cost: { solidi: 100, wood: 20, stone: 0, iron: 0 },
         production: { solidi: 0, wood: 5, stone: 0, iron: 0, food: 0 },
         color: 0xC2B280, // Sand/Wood (Pastel Brown)
@@ -118,8 +120,8 @@ export const BUILDINGS = {
     },
     quarry: {
         id: 'quarry',
-        name: 'Quarry',
-        description: 'Produces Stone.',
+        name: 'building.quarry.name',
+        description: 'building.quarry.desc',
         cost: { solidi: 100, wood: 100, stone: 0, iron: 0 },
         production: { solidi: 0, wood: 0, stone: 3, iron: 0, food: 0 },
         color: 0xcfcfc4, // Pastel Gray
@@ -130,8 +132,8 @@ export const BUILDINGS = {
     },
     mine: {
         id: 'mine',
-        name: 'Iron Mine',
-        description: 'Extracts Iron.',
+        name: 'building.mine.name',
+        description: 'building.mine.desc',
         cost: { solidi: 150, wood: 150, stone: 100, iron: 0 },
         production: { solidi: 0, wood: 0, stone: 0, iron: 2, food: 0 },
         color: 0x708090, // SlateGray (Kept generic, but lighter)
@@ -142,20 +144,35 @@ export const BUILDINGS = {
     },
     farm: {
         id: 'farm',
-        name: 'Farm',
-        description: 'Produces Food.',
+        name: 'building.farm.name',
+        description: 'building.farm.desc',
         cost: { solidi: 80, wood: 50, stone: 20, iron: 0 },
         production: { solidi: 0, wood: 0, stone: 0, iron: 0, food: 5 },
+        workerSlots: 3,
+        workerProduction: { food: 5 },
         color: 0xfdfd96, // Pastel Yellow
         width: 1,
         depth: 1,
         buildTime: 5000,
         icon: 'ra ra-scythe'
     },
+    mill: {
+        id: 'mill',
+        name: 'building.mill.name',
+        description: 'building.mill.desc',
+        cost: { solidi: 200, wood: 150, stone: 50, iron: 0 },
+        production: { solidi: 0, wood: 0, stone: 0, iron: 0, food: 0 },
+        bonus: { foodMultiplier: 1.2 },
+        color: 0xffebcd, // BlanchedAlmond
+        width: 1,
+        depth: 1,
+        buildTime: 8000,
+        icon: 'ra ra-windmill'
+    },
     market: {
         id: 'market',
-        name: 'Market',
-        description: 'Increases Solidi production.',
+        name: 'building.market.name',
+        description: 'building.market.desc',
         cost: { solidi: 200, wood: 100, stone: 50, iron: 0 },
         production: { solidi: 10, wood: 0, stone: 0, iron: 0, food: 0 },
         color: 0xffb347, // Pastel Orange
@@ -166,8 +183,8 @@ export const BUILDINGS = {
     },
     barracks: {
         id: 'barracks',
-        name: 'Barracks',
-        description: 'Trains soldiers.',
+        name: 'building.barracks.name',
+        description: 'building.barracks.desc',
         cost: { solidi: 300, wood: 200, stone: 200, iron: 50 },
         production: { solidi: -5, wood: 0, stone: 0, iron: 0, food: 0 },
         color: 0xaec6cf, // Pastel Blue
@@ -178,8 +195,8 @@ export const BUILDINGS = {
     },
     temple: {
         id: 'temple',
-        name: 'Temple',
-        description: 'A place for worship. Citizens request this.',
+        name: 'building.temple.name',
+        description: 'building.temple.desc',
         cost: { solidi: 500, wood: 300, stone: 500, iron: 50 },
         production: { solidi: -2, wood: 0, stone: 0, iron: 0, food: 0 },
         color: 0xffffff, // White
@@ -190,8 +207,8 @@ export const BUILDINGS = {
     },
     colosseum: {
         id: 'colosseum',
-        name: 'Colosseum',
-        description: 'Entertainment for the masses.',
+        name: 'building.colosseum.name',
+        description: 'building.colosseum.desc',
         cost: { solidi: 1000, wood: 500, stone: 1000, iron: 200 },
         production: { solidi: -10, wood: 0, stone: 0, iron: 0, food: 0 },
         color: 0xdda0dd, // Plum (Pastel Purple)
@@ -204,75 +221,75 @@ export const BUILDINGS = {
 
 export const REQUEST_TEMPLATES = [
     // --- BASIC NEEDS (Houses & Farms) ---
-    { title: "Population Boom", description: "Citizens are arriving daily. Build a House.", type: "build", target: "house", reward: { solidi: 100 } },
-    { title: "New Families", description: "Young couples need homes. Build a House.", type: "build", target: "house", reward: { solidi: 110 } },
-    { title: "Refugees", description: "Refugees seek shelter. Build a House.", type: "build", target: "house", reward: { solidi: 120 } },
-    { title: "Expansion Plans", description: "The city must grow. Build a House.", type: "build", target: "house", reward: { solidi: 100 } },
-    { title: "Housing Shortage", description: "Streets are crowded. Build a House.", type: "build", target: "house", reward: { solidi: 130 } },
-    { title: "Winter Shelter", description: "Winter is coming. Build a House.", type: "build", target: "house", reward: { solidi: 140 } },
-    { title: "Merchant Quarter", description: "Merchants need residences. Build a House.", type: "build", target: "house", reward: { solidi: 150 } },
-    { title: "Craftsmen Homes", description: "Attract skilled labor. Build a House.", type: "build", target: "house", reward: { solidi: 110 } },
+    { title: "req.pop_boom.title", description: "req.pop_boom.desc", type: "build", target: "house", reward: { solidi: 100 } },
+    { title: "req.new_families.title", description: "req.new_families.desc", type: "build", target: "house", reward: { solidi: 110 } },
+    { title: "req.refugees.title", description: "req.refugees.desc", type: "build", target: "house", reward: { solidi: 120 } },
+    { title: "req.expansion.title", description: "req.expansion.desc", type: "build", target: "house", reward: { solidi: 100 } },
+    { title: "req.housing.title", description: "req.housing.desc", type: "build", target: "house", reward: { solidi: 130 } },
+    { title: "req.winter.title", description: "req.winter.desc", type: "build", target: "house", reward: { solidi: 140 } },
+    { title: "req.merchant_homes.title", description: "req.merchant_homes.desc", type: "build", target: "house", reward: { solidi: 150 } },
+    { title: "req.craftsmen.title", description: "req.craftsmen.desc", type: "build", target: "house", reward: { solidi: 110 } },
 
-    { title: "Famine Warning", description: "Stores are running low. Build a Farm.", type: "build", target: "farm", reward: { solidi: 150 } },
-    { title: "Grain Supply", description: "We need more grain. Build a Farm.", type: "build", target: "farm", reward: { solidi: 160 } },
-    { title: "Feeding the Army", description: "Troops march on empty stomachs. Build a Farm.", type: "build", target: "farm", reward: { solidi: 170 } },
-    { title: "Agricultural Boom", description: "Good weather for crops. Build a Farm.", type: "build", target: "farm", reward: { solidi: 150 } },
-    { title: "Apple Orchards", description: "People demand fruit. Build a Farm.", type: "build", target: "farm", reward: { solidi: 160 } },
-    { title: "Cattle Ranching", description: "Meat is a luxury. Build a Farm.", type: "build", target: "farm", reward: { solidi: 180 } },
-    { title: "Golden Fields", description: "Expand our agriculture. Build a Farm.", type: "build", target: "farm", reward: { solidi: 155 } },
+    { title: "req.famine.title", description: "req.famine.desc", type: "build", target: "farm", reward: { solidi: 150 } },
+    { title: "req.grain.title", description: "req.grain.desc", type: "build", target: "farm", reward: { solidi: 160 } },
+    { title: "req.army_feed.title", description: "req.army_feed.desc", type: "build", target: "farm", reward: { solidi: 170 } },
+    { title: "req.agri_boom.title", description: "req.agri_boom.desc", type: "build", target: "farm", reward: { solidi: 150 } },
+    { title: "req.orchards.title", description: "req.orchards.desc", type: "build", target: "farm", reward: { solidi: 160 } },
+    { title: "req.cattle.title", description: "req.cattle.desc", type: "build", target: "farm", reward: { solidi: 180 } },
+    { title: "req.golden_fields.title", description: "req.golden_fields.desc", type: "build", target: "farm", reward: { solidi: 155 } },
 
     // --- INDUSTRY (Wood, Stone, Iron) ---
-    { title: "Lumber Needs", description: "Construction has stalled. Build a Woodcutter.", type: "build", target: "woodcutter", reward: { solidi: 200 } },
-    { title: "Shipbuilding Timber", description: "The navy needs wood. Build a Woodcutter.", type: "build", target: "woodcutter", reward: { solidi: 220 } },
-    { title: "Fuel for Fires", description: "Winter demands firewood. Build a Woodcutter.", type: "build", target: "woodcutter", reward: { solidi: 210 } },
-    { title: "Clear the Forest", description: "Expand the frontier. Build a Woodcutter.", type: "build", target: "woodcutter", reward: { solidi: 200 } },
-    { title: "Carpenter's Request", description: "Carpenters need supply. Build a Woodcutter.", type: "build", target: "woodcutter", reward: { solidi: 230 } },
+    { title: "req.lumber.title", description: "req.lumber.desc", type: "build", target: "woodcutter", reward: { solidi: 200 } },
+    { title: "req.ship_timber.title", description: "req.ship_timber.desc", type: "build", target: "woodcutter", reward: { solidi: 220 } },
+    { title: "req.firewood.title", description: "req.firewood.desc", type: "build", target: "woodcutter", reward: { solidi: 210 } },
+    { title: "req.forest.title", description: "req.forest.desc", type: "build", target: "woodcutter", reward: { solidi: 200 } },
+    { title: "req.carpenter.title", description: "req.carpenter.desc", type: "build", target: "woodcutter", reward: { solidi: 230 } },
 
-    { title: "Wall Fortifications", description: "We need stone for walls. Build a Quarry.", type: "build", target: "quarry", reward: { solidi: 250 } },
-    { title: "Paving Roads", description: "Roads are muddy. Build a Quarry.", type: "build", target: "quarry", reward: { solidi: 260 } },
-    { title: "Monument Material", description: "Sculptors need marble. Build a Quarry.", type: "build", target: "quarry", reward: { solidi: 280 } },
-    { title: "Foundation Work", description: "New buildings need foundations. Build a Quarry.", type: "build", target: "quarry", reward: { solidi: 250 } },
-    { title: "Rock Supply", description: "Stockpile stone. Build a Quarry.", type: "build", target: "quarry", reward: { solidi: 270 } },
+    { title: "req.walls.title", description: "req.walls.desc", type: "build", target: "quarry", reward: { solidi: 250 } },
+    { title: "req.paving.title", description: "req.paving.desc", type: "build", target: "quarry", reward: { solidi: 260 } },
+    { title: "req.monument.title", description: "req.monument.desc", type: "build", target: "quarry", reward: { solidi: 280 } },
+    { title: "req.foundation.title", description: "req.foundation.desc", type: "build", target: "quarry", reward: { solidi: 250 } },
+    { title: "req.rock.title", description: "req.rock.desc", type: "build", target: "quarry", reward: { solidi: 270 } },
 
-    { title: "Weaponsmithing", description: "Smiths are idle. Build a Iron Mine.", type: "build", target: "mine", reward: { solidi: 300 } },
-    { title: "Armor Production", description: "The legion needs armor. Build a Iron Mine.", type: "build", target: "mine", reward: { solidi: 320 } },
-    { title: "Tool Shortage", description: "Farmers need plows. Build a Iron Mine.", type: "build", target: "mine", reward: { solidi: 310 } },
-    { title: "Deep Earth", description: "Riches lie beneath. Build a Iron Mine.", type: "build", target: "mine", reward: { solidi: 350 } },
-    { title: "Iron Age", description: "Iron is power. Build a Iron Mine.", type: "build", target: "mine", reward: { solidi: 330 } },
+    { title: "req.weapons.title", description: "req.weapons.desc", type: "build", target: "mine", reward: { solidi: 300 } },
+    { title: "req.armor.title", description: "req.armor.desc", type: "build", target: "mine", reward: { solidi: 320 } },
+    { title: "req.tools.title", description: "req.tools.desc", type: "build", target: "mine", reward: { solidi: 310 } },
+    { title: "req.deep_earth.title", description: "req.deep_earth.desc", type: "build", target: "mine", reward: { solidi: 350 } },
+    { title: "req.iron_age.title", description: "req.iron_age.desc", type: "build", target: "mine", reward: { solidi: 330 } },
 
     // --- ECONOMY (Market) ---
-    { title: "Trade Routes", description: "Merchants want a hub. Build a Market.", type: "build", target: "market", reward: { solidi: 350 } },
-    { title: "Local Commerce", description: "Farmers depend on trade. Build a Market.", type: "build", target: "market", reward: { solidi: 360 } },
-    { title: "Tax Revenue", description: "Increase tax efficiency. Build a Market.", type: "build", target: "market", reward: { solidi: 400 } },
-    { title: "Foreign Goods", description: "Import luxury items. Build a Market.", type: "build", target: "market", reward: { solidi: 380 } },
-    { title: "Bazaar Opening", description: "The people love shopping. Build a Market.", type: "build", target: "market", reward: { solidi: 370 } },
-    { title: "Coin Flow", description: "Keep the gold moving. Build a Market.", type: "build", target: "market", reward: { solidi: 390 } },
+    { title: "req.trade.title", description: "req.trade.desc", type: "build", target: "market", reward: { solidi: 350 } },
+    { title: "req.commerce.title", description: "req.commerce.desc", type: "build", target: "market", reward: { solidi: 360 } },
+    { title: "req.tax.title", description: "req.tax.desc", type: "build", target: "market", reward: { solidi: 400 } },
+    { title: "req.foreign.title", description: "req.foreign.desc", type: "build", target: "market", reward: { solidi: 380 } },
+    { title: "req.bazaar.title", description: "req.bazaar.desc", type: "build", target: "market", reward: { solidi: 370 } },
+    { title: "req.coin.title", description: "req.coin.desc", type: "build", target: "market", reward: { solidi: 390 } },
 
     // --- MILITARY (Barracks) ---
-    { title: "Militia Parsing", description: "Train the peasants. Build a Barracks.", type: "build", target: "barracks", reward: { solidi: 300 } },
-    { title: "Border Patrol", description: "Secure the borders. Build a Barracks.", type: "build", target: "barracks", reward: { solidi: 320 } },
-    { title: "Elite Guards", description: "The General needs guards. Build a Barracks.", type: "build", target: "barracks", reward: { solidi: 350 } },
-    { title: "Conscription", description: "Draft more soldiers. Build a Barracks.", type: "build", target: "barracks", reward: { solidi: 310 } },
-    { title: "War Preparations", description: "Enemy scouts spotted. Build a Barracks.", type: "build", target: "barracks", reward: { solidi: 340 } },
-    { title: "Training Grounds", description: "Keep troops sharp. Build a Barracks.", type: "build", target: "barracks", reward: { solidi: 330 } },
+    { title: "req.militia.title", description: "req.militia.desc", type: "build", target: "barracks", reward: { solidi: 300 } },
+    { title: "req.patrol.title", description: "req.patrol.desc", type: "build", target: "barracks", reward: { solidi: 320 } },
+    { title: "req.guards.title", description: "req.guards.desc", type: "build", target: "barracks", reward: { solidi: 350 } },
+    { title: "req.draft.title", description: "req.draft.desc", type: "build", target: "barracks", reward: { solidi: 310 } },
+    { title: "req.war_prep.title", description: "req.war_prep.desc", type: "build", target: "barracks", reward: { solidi: 340 } },
+    { title: "req.training.title", description: "req.training.desc", type: "build", target: "barracks", reward: { solidi: 330 } },
 
     // --- FAITH & LUXURY (Temple & Colosseum) ---
-    { title: "Divine Favor", description: "The Gods are angry. Build a Temple.", type: "build", target: "temple", reward: { solidi: 400 } },
-    { title: "Religious Festival", description: "Host a festival. Build a Temple.", type: "build", target: "temple", reward: { solidi: 450 } },
-    { title: "Holy Site", description: "Pilgrims are coming. Build a Temple.", type: "build", target: "temple", reward: { solidi: 420 } },
-    { title: "Spiritual Guidance", description: "People seek answers. Build a Temple.", type: "build", target: "temple", reward: { solidi: 410 } },
+    { title: "req.divine.title", description: "req.divine.desc", type: "build", target: "temple", reward: { solidi: 400 } },
+    { title: "req.festival.title", description: "req.festival.desc", type: "build", target: "temple", reward: { solidi: 450 } },
+    { title: "req.holy.title", description: "req.holy.desc", type: "build", target: "temple", reward: { solidi: 420 } },
+    { title: "req.spiritual.title", description: "req.spiritual.desc", type: "build", target: "temple", reward: { solidi: 410 } },
 
-    { title: "Grand Games", description: "Host the grand games! Build a Colosseum.", type: "build", target: "colosseum", reward: { solidi: 1000 } },
-    { title: "Gladiator Combat", description: "The people want blood. Build a Colosseum.", type: "build", target: "colosseum", reward: { solidi: 1200 } },
-    { title: "Public Display", description: "Show your power. Build a Colosseum.", type: "build", target: "colosseum", reward: { solidi: 1100 } },
-    { title: "Entertainment Hub", description: "Distract the masses. Build a Colosseum.", type: "build", target: "colosseum", reward: { solidi: 1050 } },
-    { title: "Victory Celebration", description: "Celebrate our conquests. Build a Colosseum.", type: "build", target: "colosseum", reward: { solidi: 1150 } }
+    { title: "req.games.title", description: "req.games.desc", type: "build", target: "colosseum", reward: { solidi: 1000 } },
+    { title: "req.gladiator.title", description: "req.gladiator.desc", type: "build", target: "colosseum", reward: { solidi: 1200 } },
+    { title: "req.display.title", description: "req.display.desc", type: "build", target: "colosseum", reward: { solidi: 1100 } },
+    { title: "req.entertainment.title", description: "req.entertainment.desc", type: "build", target: "colosseum", reward: { solidi: 1050 } },
+    { title: "req.victory.title", description: "req.victory.desc", type: "build", target: "colosseum", reward: { solidi: 1150 } }
 ];
 
 export const EXPLORATION_TYPES = {
     wood: {
         id: 'wood',
-        name: 'Search for Wood',
+        name: 'explore.wood.name',
         icon: 'ra ra-pine-tree',
         cost: 50,
         time: 5000, // 5 seconds
@@ -282,7 +299,7 @@ export const EXPLORATION_TYPES = {
     },
     stone: {
         id: 'stone',
-        name: 'Search for Stone',
+        name: 'explore.stone.name',
         icon: 'ra ra-cubes',
         cost: 80,
         time: 8000,
@@ -292,7 +309,7 @@ export const EXPLORATION_TYPES = {
     },
     iron: {
         id: 'iron',
-        name: 'Search for Iron',
+        name: 'explore.iron.name',
         icon: 'ra ra-mining-diamonds',
         cost: 120,
         time: 12000,
@@ -305,8 +322,8 @@ export const EXPLORATION_TYPES = {
 export const UNIT_TYPES = {
     soldier: {
         id: 'soldier',
-        name: 'Soldier',
-        description: 'Basic infantry unit.',
+        name: 'unit.soldier.name',
+        description: 'unit.soldier.desc',
         cost: 100,
         stats: { attack: 10, health: 50, speed: 1 },
         icon: 'ra ra-sword',
@@ -315,8 +332,8 @@ export const UNIT_TYPES = {
     },
     archer: {
         id: 'archer',
-        name: 'Archer',
-        description: 'Ranged unit.',
+        name: 'unit.archer.name',
+        description: 'unit.archer.desc',
         cost: 150,
         stats: { attack: 15, health: 30, speed: 1.2 },
         icon: 'ra ra-archer',
@@ -325,8 +342,8 @@ export const UNIT_TYPES = {
     },
     knight: {
         id: 'knight',
-        name: 'Knight',
-        description: 'Mounted unit.',
+        name: 'unit.knight.name',
+        description: 'unit.knight.desc',
         cost: 300,
         stats: { attack: 25, health: 80, speed: 2 },
         icon: 'ra ra-knight-helmet',
@@ -335,8 +352,8 @@ export const UNIT_TYPES = {
     },
     hero: {
         id: 'hero',
-        name: 'Hero',
-        description: 'Powerful leader.',
+        name: 'unit.hero.name',
+        description: 'unit.hero.desc',
         cost: 1000,
         stats: { attack: 100, health: 500, speed: 1.5 },
         icon: 'ra ra-broken-skull',

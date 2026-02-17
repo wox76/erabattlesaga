@@ -1,4 +1,5 @@
 import { GENERALS, BUILDINGS, EXPLORATION_TYPES, RESOURCES, UNIT_TYPES } from './data.js';
+import { t } from './i18n.js';
 
 export class UIManager {
     constructor(gameManager) {
@@ -36,7 +37,7 @@ export class UIManager {
 
         const startBtn = document.createElement('button');
         startBtn.className = 'start-game-btn';
-        startBtn.textContent = 'START';
+        startBtn.textContent = t('ui.start');
         startBtn.onclick = () => {
             // Try to go full screen
             if (document.documentElement.requestFullscreen) {
@@ -89,11 +90,11 @@ export class UIManager {
             info.className = 'slider-info';
 
             const name = document.createElement('h1');
-            name.textContent = general.name;
+            name.textContent = t(general.name);
 
             const desc = document.createElement('p');
             desc.className = 'slider-desc';
-            desc.textContent = general.description;
+            desc.textContent = t(general.description);
 
             const bonus = document.createElement('div');
             bonus.className = 'slider-bonus';
@@ -118,7 +119,7 @@ export class UIManager {
         // === Select Button ===
         const selectBtn = document.createElement('button');
         selectBtn.className = 'select-btn';
-        selectBtn.textContent = 'START REIGN';
+        selectBtn.textContent = t('ui.start_reign');
         selectBtn.style.marginTop = '20px';
         selectBtn.onclick = () => {
             const general = GENERALS[this.currentGeneralIndex];
@@ -288,7 +289,7 @@ export class UIManager {
 
         const genName = document.createElement('div');
         genName.className = 'general-name-hud';
-        genName.textContent = this.gameManager.selectedGeneral.name;
+        genName.textContent = t(this.gameManager.selectedGeneral.name);
 
         generalPanel.appendChild(genImg);
         generalPanel.appendChild(genName);
@@ -304,7 +305,7 @@ export class UIManager {
         const reqBtn = document.createElement('button');
         reqBtn.className = 'hud-btn';
         reqBtn.textContent = 'R';
-        reqBtn.title = 'Requests';
+        reqBtn.title = t('ui.requests');
         reqBtn.onclick = () => this.toggleRequests();
         hudButtons.appendChild(reqBtn);
 
@@ -312,7 +313,7 @@ export class UIManager {
         const questBtn = document.createElement('button');
         questBtn.className = 'hud-btn';
         questBtn.innerHTML = '<i class="ra ra-scroll-unfurled"></i>';
-        questBtn.title = 'Quests';
+        questBtn.title = t('ui.quests');
         questBtn.onclick = () => this.toggleQuestLog();
         hudButtons.appendChild(questBtn);
         this.questBtn = questBtn; // Save ref for updates
@@ -326,11 +327,24 @@ export class UIManager {
         this.requestsPanel = requestsPanel;
 
         // === Exploration Panel - Left (Below General) ===
+        const explorePanel = document.createElement('div');
+        explorePanel.className = 'exploration-panel ui-element';
+
+        Object.values(EXPLORATION_TYPES).forEach(type => {
+            const btn = document.createElement('button');
+            btn.className = 'explore-btn';
+            btn.id = `explore-${type.id}`;
+            btn.onclick = () => {
+                this.gameManager.sendExplorer(type.id);
+            };
+            explorePanel.appendChild(btn);
+        });
+        this.container.appendChild(explorePanel);
 
         // === Army Button - Right Side (Requests Panel) ===
         const armyBtn = document.createElement('button');
         armyBtn.className = 'army-btn ui-element'; // Define style later
-        armyBtn.innerHTML = '<i class="ra ra-crossed-swords"></i> ARMY';
+        armyBtn.innerHTML = `<i class="ra ra-crossed-swords"></i> ${t('ui.army')}`;
         armyBtn.onclick = () => this.showArmyUI();
         this.container.appendChild(armyBtn);
 
@@ -364,7 +378,7 @@ export class UIManager {
 
             btn.innerHTML = `
                 <div class="building-icon"><i class="${b.icon}"></i></div>
-                <div class="building-name">${b.name}</div>
+                <div class="building-name">${t(b.name)}</div>
                 <div class="building-cost">
                     ${costStr}
                 </div>
@@ -480,11 +494,12 @@ export class UIManager {
             const r = this.gameManager.resources;
             // Define icons/labels
             const resData = [
-                { id: 'solidi', label: 'Solidi', icon: 'ra ra-gold-bar icon-solidi', val: Math.floor(r.solidi) },
-                { id: 'wood', label: 'Wood', icon: 'ra ra-pine-tree icon-wood', val: Math.floor(r.wood) },
-                { id: 'stone', label: 'Stone', icon: 'ra ra-cubes icon-stone', val: Math.floor(r.stone) },
-                { id: 'iron', label: 'Iron', icon: 'ra ra-mining-diamonds icon-iron', val: Math.floor(r.iron) },
-                { id: 'food', label: 'Food', icon: 'ra ra-meat icon-food', val: Math.floor(r.food) }
+                { id: 'solidi', label: t('res.solidi'), icon: 'ra ra-gold-bar icon-solidi', val: Math.floor(r.solidi) },
+                { id: 'wood', label: t('res.wood'), icon: 'ra ra-pine-tree icon-wood', val: Math.floor(r.wood) },
+                { id: 'stone', label: t('res.stone'), icon: 'ra ra-cubes icon-stone', val: Math.floor(r.stone) },
+                { id: 'iron', label: t('res.iron'), icon: 'ra ra-mining-diamonds icon-iron', val: Math.floor(r.iron) },
+                { id: 'food', label: t('res.food'), icon: 'ra ra-meat icon-food', val: Math.floor(r.food) },
+                { id: 'population', label: t('res.population'), icon: 'ra ra-player icon-population', val: Math.floor(r.population) }
             ];
 
             // Use simple ID checks to avoid full re-render flickering if possible, 
@@ -501,26 +516,26 @@ export class UIManager {
         // Requests
         const reqPanel = document.getElementById('requests-panel');
         if (reqPanel) {
-            reqPanel.innerHTML = '<h3>Requests</h3>';
+            reqPanel.innerHTML = `<h3>${t('ui.requests')}</h3>`;
             this.gameManager.activeRequests.forEach(req => {
                 const item = document.createElement('div');
                 item.className = 'request-item';
                 item.innerHTML = `
-                     <div class="req-title">${req.title}</div>
-                     <div class="req-desc">${req.description}</div>
-                     <div class="req-reward">Reward: ${req.reward.solidi} Solidi</div>
+                     <div class="req-title">${t(req.title)}</div>
+                     <div class="req-desc">${t(req.description)}</div>
+                     <div class="req-reward">${t('ui.reward')}: ${req.reward.solidi} ${t('res.solidi')}</div>
                  `;
 
                 if (req.status === 'completed') {
                     item.classList.add('completed');
-                    item.innerHTML += '<div class="req-status">COMPLETED</div>';
+                    item.innerHTML += `<div class="req-status">${t('ui.completed')}</div>`;
                 } else if (req.status === 'constructing') {
-                    item.innerHTML += '<button class="make-btn" disabled>Constructing...</button>';
+                    item.innerHTML += `<button class="make-btn" disabled>${t('ui.constructing')}</button>`;
                 } else if (req.type === 'build' && req.status === 'active') {
                     if (this.gameManager.canAfford(req.target)) {
                         const makeBtn = document.createElement('button');
                         makeBtn.className = 'make-btn';
-                        makeBtn.textContent = 'Make';
+                        makeBtn.textContent = t('ui.make');
                         makeBtn.onclick = () => {
                             this.gameManager.constructBuilding(req.target);
                         };
@@ -531,7 +546,7 @@ export class UIManager {
                 reqPanel.appendChild(item);
             });
             if (this.gameManager.activeRequests.length === 0) {
-                reqPanel.innerHTML += '<div class="no-req">The people are content... for now.</div>';
+                reqPanel.innerHTML += `<div class="no-req">${t('ui.no_requests')}</div>`;
             }
         }
 
@@ -543,7 +558,7 @@ export class UIManager {
                 if (explorer) {
                     const remaining = Math.ceil((explorer.endTime - Date.now()) / 1000);
                     btn.innerHTML = `
-                        <div style="font-size:0.7em">Back:</div>
+                        <div style="font-size:0.7em">${t('ui.returning')}</div>
                         <div class="explore-icon"><i class="${type.icon} icon-${type.id}"></i></div>
                         <div class="explore-cost">${remaining}s</div>
                     `;
@@ -594,47 +609,97 @@ export class UIManager {
         // Create Modal Overlay
         const overlay = document.createElement('div');
         overlay.className = 'modal-overlay';
+        overlay.id = 'building-modal'; // ID for easier updates
 
-        // Modal Content
-        overlay.innerHTML = `
+        const renderModalContent = () => {
+            const b = this.gameManager.buildings.find(build => build.id === buildingId);
+            if (!b) return; // Should not happen
+
+            // Re-calculate visual data
+            const currentWorkers = b.workers || 0;
+            const maxWorkers = def.workerSlots || 0;
+
+            let workerSection = '';
+            if (maxWorkers > 0) {
+                workerSection = `
+                    <div style="margin: 20px 0; border-top: 1px solid #444; padding-top: 10px;">
+                        <h3>${t('ui.workers')} (${currentWorkers}/${maxWorkers})</h3>
+                        <p style="font-size: 0.9em; color: #aaa;">
+                            ${t('ui.bonus_per_worker', { amount: def.workerProduction?.food || 0, res: t('res.food') })} 
+                        </p>
+                        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
+                            <button id="assign-worker" class="btn primary-btn" ${currentWorkers >= maxWorkers ? 'disabled' : ''}>
+                                + ${t('ui.assign')}
+                            </button>
+                            <button id="remove-worker" class="btn close-btn" ${currentWorkers <= 0 ? 'disabled' : ''}>
+                                - ${t('ui.unassign')}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            overlay.innerHTML = `
             <div class="modal-content" style="width: 400px; text-align: center;">
-                <h2>${def.name} (Level ${currentLevel})</h2>
-                <p>${def.description}</p>
-                <div style="margin: 20px 0; text-align: left;">
-                    <h3>Upgrade to Level ${nextLevel}</h3>
-                    <p><strong>Production:</strong> +50%</p>
-                    <p><strong>XP Reward:</strong> 10 XP</p>
+                <h2>${t(def.name)} (${t('ui.level')} ${b.level || 1})</h2>
+                <p>${t(def.description)}</p>
+                
+                ${workerSection}
+
+                <div style="margin: 20px 0; text-align: left; border-top: 1px solid #444; padding-top: 10px;">
+                    <h3>${t('ui.upgrade_to')} ${nextLevel}</h3>
+                    <p><strong>${t('ui.production')}:</strong> +50%</p>
+                    <p><strong>${t('ui.xp_reward')}:</strong> 10 XP</p>
                     <div class="cost-list">
-                        ${cost.solidi > 0 ? `<div><i class="ra ra-gold-bar icon-solidi"></i> ${cost.solidi} Solidi</div>` : ''}
-                        ${cost.wood > 0 ? `<div><i class="ra ra-pine-tree icon-wood"></i> ${cost.wood} Wood</div>` : ''}
-                        ${cost.stone > 0 ? `<div><i class="ra ra-cubes icon-stone"></i> ${cost.stone} Stone</div>` : ''}
-                        ${cost.iron > 0 ? `<div><i class="ra ra-mining-diamonds icon-iron"></i> ${cost.iron} Iron</div>` : ''}
+                        ${cost.solidi > 0 ? `<div><i class="ra ra-gold-bar icon-solidi"></i> ${cost.solidi} ${t('res.solidi')}</div>` : ''}
+                        ${cost.wood > 0 ? `<div><i class="ra ra-pine-tree icon-wood"></i> ${cost.wood} ${t('res.wood')}</div>` : ''}
+                        ${cost.stone > 0 ? `<div><i class="ra ra-cubes icon-stone"></i> ${cost.stone} ${t('res.stone')}</div>` : ''}
+                        ${cost.iron > 0 ? `<div><i class="ra ra-mining-diamonds icon-iron"></i> ${cost.iron} ${t('res.iron')}</div>` : ''}
                     </div>
                 </div>
                 <div style="display: flex; gap: 10px; justify-content: center;">
-                    <button id="confirm-upgrade" class="btn primary-btn">Upgrade</button>
-                    <button id="cancel-upgrade" class="btn close-btn">Cancel</button>
+                    <button id="confirm-upgrade" class="btn primary-btn">${t('ui.upgrade')}</button>
+                    <button id="cancel-upgrade" class="btn close-btn">${t('ui.cancel')}</button>
                 </div>
             </div>
-        `;
+            `;
 
-        document.body.appendChild(overlay);
+            // Re-attach listeners after innerHTML update
+            overlay.querySelector('#confirm-upgrade').onclick = () => {
+                const success = this.gameManager.upgradeBuilding(buildingId);
+                if (success) {
+                    document.body.removeChild(overlay);
+                } else {
+                    alert(t('ui.not_enough_resources'));
+                }
+            };
+            overlay.querySelector('#cancel-upgrade').onclick = () => {
+                if (document.body.contains(overlay)) document.body.removeChild(overlay);
+            };
 
-        // Event Listeners
-        const confirmBtn = overlay.querySelector('#confirm-upgrade');
-        confirmBtn.onclick = () => {
-            const success = this.gameManager.upgradeBuilding(buildingId);
-            if (success) {
-                document.body.removeChild(overlay);
-            } else {
-                alert("Not enough resources!");
+            if (maxWorkers > 0) {
+                const assignBtn = overlay.querySelector('#assign-worker');
+                if (assignBtn) {
+                    assignBtn.onclick = () => {
+                        this.gameManager.assignWorker(buildingId);
+                        renderModalContent(); // Re-render to show new count
+                    };
+                }
+                const removeBtn = overlay.querySelector('#remove-worker');
+                if (removeBtn) {
+                    removeBtn.onclick = () => {
+                        this.gameManager.removeWorker(buildingId);
+                        renderModalContent();
+                    };
+                }
             }
         };
 
-        const cancelBtn = overlay.querySelector('#cancel-upgrade');
-        cancelBtn.onclick = () => {
-            document.body.removeChild(overlay);
-        };
+        renderModalContent();
+
+        document.body.appendChild(overlay);
+
+
     }
 
     showArmyUI() {
@@ -690,7 +755,7 @@ export class UIManager {
         // Army Value Display
         const valDisplay = document.createElement('h3');
         valDisplay.id = 'army-value-display';
-        valDisplay.textContent = `Army Power: ${this.gameManager.armyManager.armyValue}`;
+        valDisplay.textContent = `${t('ui.army_power')}: ${this.gameManager.armyManager.armyValue}`;
         valDisplay.style.color = 'white';
         valDisplay.style.margin = '0';
         valDisplay.style.textShadow = '2px 2px 4px black';
@@ -701,7 +766,7 @@ export class UIManager {
         const closeBtn = document.createElement('button');
         closeBtn.className = 'close-army-btn';
         closeBtn.innerHTML = '<i class="ra ra-tower"></i>'; // Verified icon
-        closeBtn.title = "Back to City";
+        closeBtn.title = t('ui.back_city');
         closeBtn.style.padding = '10px';
         closeBtn.style.fontSize = '1.5em';
         closeBtn.style.cursor = 'pointer';
@@ -733,7 +798,7 @@ export class UIManager {
         // --- Fight Button (Top Right) ---
         const fightBtn = document.createElement('button');
         fightBtn.className = 'fight-btn';
-        fightBtn.innerHTML = 'FIGHT! <i class="ra ra-crossed-swords"></i>';
+        fightBtn.innerHTML = `${t('ui.fight')} <i class="ra ra-crossed-swords"></i>`;
         fightBtn.style.position = 'absolute';
         fightBtn.style.top = '20px';
         fightBtn.style.right = '20px';
@@ -796,7 +861,7 @@ export class UIManager {
             // Name
             const nameDiv = document.createElement('div');
             nameDiv.style.fontWeight = 'bold';
-            nameDiv.textContent = type.name;
+            nameDiv.textContent = t(type.name);
 
             // Cost
             const costDiv = document.createElement('div');
@@ -807,7 +872,7 @@ export class UIManager {
             const statsDiv = document.createElement('div');
             statsDiv.style.fontSize = '0.8em';
             statsDiv.style.color = '#aaa';
-            statsDiv.textContent = `ATK: ${type.stats.attack}`;
+            statsDiv.textContent = `${t('ui.attack')}: ${type.stats.attack}`;
 
             item.appendChild(iconDiv);
             item.appendChild(nameDiv);
@@ -939,11 +1004,11 @@ export class UIManager {
                     <div class="sub-quest-item ${isDone ? 'completed' : ''}">
                         <div class="sq-text">
                             <i class="${isDone ? 'ra ra-checkbox-tree' : 'ra ra-checkbox-unchecked'}"></i>
-                            ${sq.text}
+                            ${t(sq.text, sq.textParams)}
                         </div>
-                        <div class="sq-reward">Reward: ${this.formatReward(sq.reward)}</div>
+                        <div class="sq-reward">${t('ui.reward')}: ${this.formatReward(sq.reward)}</div>
                         <div class="sq-action">
-                            ${isDone ? '<span class="sq-done-text">Done</span>' : actionBtn}
+                            ${isDone ? '<span class="sq-done-text">' + t('ui.done') + '</span>' : actionBtn}
                         </div>
                     </div>
                 `;
@@ -951,10 +1016,10 @@ export class UIManager {
 
             content = `
                 <div class="quest-header">
-                    <h2>Quest</h2>
+                    <h2>${t('ui.quests')}</h2>
                 </div>
                 <div class="quest-rewards-main">
-                    Completion: ${this.formatReward(quest.rewards)}
+                    ${t('ui.completed')}: ${this.formatReward(quest.rewards)}
                 </div>
                 <div class="sub-quests-list">
                     ${subQuestsHtml}
@@ -1003,7 +1068,7 @@ export class UIManager {
                 this.updateQuestUI();
             } else {
                 // Show feedback?
-                alert("Requirements not met!");
+                alert(t('ui.req_not_met'));
             }
         }
     }
@@ -1039,7 +1104,7 @@ export class UIManager {
         const armyList = this.gameManager.armyManager.getAllUnits();
 
         if (armyList.length === 0) {
-            alert("Recruit some units first!");
+            alert(t('ui.recruit_first'));
             return;
         }
 
@@ -1088,7 +1153,7 @@ export class UIManager {
         overlay.style.pointerEvents = 'none';
 
         const retreatBtn = document.createElement('button');
-        retreatBtn.textContent = 'RETREAT / END';
+        retreatBtn.textContent = t('ui.retreat');
         retreatBtn.className = 'btn close-btn';
         retreatBtn.style.pointerEvents = 'auto';
         retreatBtn.style.position = 'absolute';
@@ -1131,12 +1196,12 @@ export class UIManager {
             // alert(`VICTORY! You earned 500 Solidi! \nLost Units: ${deadUnits.length}`);
             this.gameManager.resources.solidi += 500;
             this.gameManager.notify(); // Update resources
-            this.showPopup(`<strong>VICTORY!</strong><br>You earned 500 Solidi!<br>Lost Units: ${deadUnits.length}`, () => {
+            this.showPopup(`<strong>${t('ui.victory')}</strong><br>${t('ui.victory_msg')}<br>${t('ui.lost_units')} ${deadUnits.length}`, () => {
                 this.showArmyUI();
             });
         } else {
             // alert(`DEFEAT! Regroup and try again. \nLost Units: ${deadUnits.length}`);
-            this.showPopup(`<strong>DEFEAT!</strong><br>Regroup and try again.<br>Lost Units: ${deadUnits.length}`, () => {
+            this.showPopup(`<strong>${t('ui.defeat')}</strong><br>${t('ui.defeat_msg')}<br>${t('ui.lost_units')} ${deadUnits.length}`, () => {
                 this.showArmyUI();
             });
         }

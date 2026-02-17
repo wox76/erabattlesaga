@@ -262,6 +262,13 @@ export class SceneManager {
             });
         }
         const color = new THREE.Color(colorHex);
+
+        // Darken based on level (15% darker per level after 1)
+        if (level > 1) {
+            const factor = Math.max(0.4, 1 - (level - 1) * 0.15); // Start at 100%, -15% per level, min 40%
+            color.multiplyScalar(factor);
+        }
+
         return new THREE.MeshStandardMaterial({ color: color });
     }
 
@@ -275,7 +282,12 @@ export class SceneManager {
         const material = this.getBuildingMaterial(def.color, buildingData.status, buildingData.level);
         const mesh = new THREE.Mesh(geometry, material);
 
-        mesh.userData = { id: buildingData.id, type: buildingData.type };
+        mesh.userData = {
+            id: buildingData.id,
+            type: buildingData.type,
+            status: buildingData.status,
+            level: buildingData.level
+        };
         const startX = -(this.gridSize * this.cellSize) / 2;
         const startZ = -(this.gridSize * this.cellSize) / 2;
         const centerX = startX + (buildingData.gridX * this.cellSize) + (w * this.cellSize) / 2;
@@ -292,6 +304,14 @@ export class SceneManager {
     updateBuildingStatus(building) {
         const mesh = this.buildingMeshes.find(m => m.userData.id === building.id);
         if (mesh) {
+            // Optimization: Check if update is needed
+            if (mesh.userData.status === building.status && mesh.userData.level === building.level) return;
+
+            console.log(`Updating building ${building.type} (Level ${building.level}) visual`);
+
+            mesh.userData.status = building.status;
+            mesh.userData.level = building.level;
+
             const def = BUILDINGS[mesh.userData.type];
             mesh.material = this.getBuildingMaterial(def.color, building.status, building.level);
         }
