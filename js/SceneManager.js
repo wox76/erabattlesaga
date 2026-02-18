@@ -13,7 +13,7 @@ export class SceneManager {
 
         // Camera Setup (Perspective)
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        this.camera.position.set(0, 50, 60);
+        this.camera.position.set(0, 20, 20);
 
         this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -24,7 +24,7 @@ export class SceneManager {
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.05;
         this.controls.maxPolarAngle = Math.PI / 2 - 0.1;
-        this.controls.minDistance = 20;
+        this.controls.minDistance = 10;
         this.controls.maxDistance = 300;
         this.controls.target.set(0, 0, 0);
 
@@ -130,7 +130,7 @@ export class SceneManager {
             console.log("battleGroup cleared and hidden");
         }
 
-        this.camera.position.set(0, 50, 60);
+        this.camera.position.set(0, 20, 20);
         this.controls.enableRotate = true;
         this.controls.target.set(0, 0, 0);
     }
