@@ -33,6 +33,15 @@ A web strategy game combining city building, army management, and auto-battler c
 - **Conseguenze**: Le unità perse in battaglia vengono rimosse permanentemente.
 - **Popup Immersivi**: Schermate di vittoria e sconfitta personalizzate.
 
+### 📈 Progressione & Profilo (Progression & Profile)
+- **XP System**: Guadagna esperienza costruendo edifici e completando missioni.
+- **Level Up**: Sali di livello per sbloccare nuove possibilità.
+- **Profilo Generale**: Visualizza le statistiche del tuo generale e i progressi attuali.
+
+### 🎨 Grafica & UI (Graphics & Interface)
+- **Rendering Avanzato**: Illuminazione dinamica, ombre morbide e nebbia atmosferica.
+- **UI Moderna**: Interfaccia pulita con icone RPG Awesome e feedback visivo immediato.
+
 ## 🛠️ Tecnologia
 - **Engine**: Motore personalizzato in JavaScript nativo.
 - **Rendering**: [THREE.js](https://threejs.org/) per le scene 3D.
