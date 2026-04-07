@@ -2,6 +2,8 @@
 
 ![Logo](assets/logo.png)
 
+### 🎮 [Gioca Online ora!](https://wox76.github.io/erabattlesaga/)
+
 Benvenuto in **Era: Battle Saga**, un gioco di strategia epico in cui vestirai i panni di un potente regnante incaricato di costruire una città leggendaria, addestrare un esercito imbattibile e dominare il regno.
 
 ## 🌟 Caratteristiche Principali
