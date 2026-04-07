@@ -1,0 +1,459 @@
+/* ============================================================
+   TOTAL BATTLE WAR — Store Styles
+   ============================================================ */
+
+/* ---- Store shell ------------------------------------------ */
+#view-store {
+    min-height: 100%;
+    background: var(--bg-deep);
+}
+
+.store-currency-bar {
+    display: flex;
+    gap: 10px;
+    padding: 10px 14px 6px;
+    justify-content: flex-end;
+}
+
+.curr-chip {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.curr-silver {
+    background: rgba(245, 200, 66, 0.12);
+    border: 1px solid rgba(245, 200, 66, 0.35);
+    color: var(--gold);
+}
+
+.curr-gems {
+    background: rgba(100, 180, 255, 0.12);
+    border: 1px solid rgba(100, 180, 255, 0.35);
+    color: #7dc8ff;
+}
+
+/* Tab bar override for 4 tabs */
+.store-tab-bar .tab-btn {
+    font-size: 11px;
+    padding: 10px 4px;
+}
+
+/* Category pill bar */
+.store-cat-bar {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 10px 14px 4px;
+    scrollbar-width: none;
+}
+
+.store-cat-bar::-webkit-scrollbar {
+    display: none;
+}
+
+.cat-btn {
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.18s;
+}
+
+.cat-btn.active {
+    background: var(--gold-glow);
+    border-color: var(--gold);
+    color: var(--gold);
+}
+
+/* ---- Store grid ------------------------------------------- */
+.store-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 10px 14px 24px;
+}
+
+/* Single column for generals/monsters which are taller */
+.gen-grid,
+.mon-grid {
+    grid-template-columns: 1fr;
+}
+
+/* ---- Store card ------------------------------------------- */
+.store-card {
+    position: relative;
+    background: var(--bg-card2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    text-align: center;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.store-card:hover {
+    border-color: rgba(245, 200, 66, 0.3);
+}
+
+.store-card-locked {
+    opacity: 0.55;
+}
+
+/* Rarity borders */
+.rarity-raro {
+    border-color: rgba(74, 144, 217, 0.5);
+    box-shadow: 0 0 10px rgba(74, 144, 217, 0.08);
+}
+
+.rarity-epico {
+    border-color: rgba(155, 89, 182, 0.5);
+    box-shadow: 0 0 12px rgba(155, 89, 182, 0.1);
+}
+
+.rarity-leggendario {
+    border-color: rgba(245, 200, 66, 0.6);
+    box-shadow: 0 0 16px rgba(245, 200, 66, 0.12);
+}
+
+/* Badge */
+.store-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    border-radius: 6px;
+    padding: 2px 7px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+.badge-popular {
+    background: rgba(231, 76, 60, 0.8);
+    color: #fff;
+}
+
+.badge-value {
+    background: rgba(39, 174, 96, 0.8);
+    color: #fff;
+}
+
+.badge-best {
+    background: rgba(245, 200, 66, 0.9);
+    color: #1a0f00;
+}
+
+.badge-rare {
+    background: rgba(74, 144, 217, 0.8);
+    color: #fff;
+}
+
+.badge-legendary {
+    background: linear-gradient(135deg, #f5c842, #c9911e);
+    color: #1a0f00;
+}
+
+.badge-epic {
+    background: rgba(155, 89, 182, 0.85);
+    color: #fff;
+}
+
+.badge-recommended {
+    background: rgba(46, 204, 113, 0.8);
+    color: #fff;
+}
+
+.badge-default {
+    background: var(--border);
+    color: var(--text-muted);
+}
+
+/* Card parts */
+.sc-icon {
+    font-size: 32px;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+}
+
+.sc-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+}
+
+.sc-gives {
+    font-size: 11px;
+    color: var(--gold);
+    font-weight: 600;
+}
+
+.sc-troops {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+}
+
+.sc-desc {
+    font-size: 10px;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+.sc-cost {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 2px;
+}
+
+.troop-give-chip {
+    background: rgba(224, 74, 47, 0.15);
+    border: 1px solid rgba(224, 74, 47, 0.3);
+    border-radius: 6px;
+    padding: 2px 6px;
+    font-size: 11px;
+}
+
+.sc-buy-btn {
+    margin-top: 4px;
+    font-size: 12px;
+    padding: 9px 14px;
+    border-radius: 8px;
+}
+
+/* Buy button variants */
+.btn-buy {
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    color: #1a0f00;
+}
+
+.btn-monster {
+    background: linear-gradient(135deg, #9b59b6, #6c3483);
+    color: #fff;
+}
+
+/* ---- Generals --------------------------------------------- */
+.gen-card {
+    align-items: flex-start;
+    text-align: left;
+}
+
+.gen-portrait {
+    font-size: 52px;
+    align-self: center;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.6));
+}
+
+.gen-name {
+    font-family: var(--font-title);
+    font-size: 16px;
+    color: var(--gold);
+    letter-spacing: 0.3px;
+}
+
+.gen-role-chip {
+    display: inline-block;
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.rarity-chip-comune {
+    background: rgba(127, 140, 141, 0.3);
+    color: #aaa;
+}
+
+.rarity-chip-raro {
+    background: rgba(74, 144, 217, 0.25);
+    color: #7cb9f5;
+}
+
+.rarity-chip-epico {
+    background: rgba(155, 89, 182, 0.25);
+    color: #c29de0;
+}
+
+.rarity-chip-leggendario {
+    background: rgba(245, 200, 66, 0.2);
+    color: var(--gold);
+}
+
+.gen-passive {
+    font-size: 12px;
+    font-weight: 600;
+    color: #7dc8ff;
+    background: rgba(100, 180, 255, 0.1);
+    border: 1px solid rgba(100, 180, 255, 0.2);
+    border-radius: 6px;
+    padding: 5px 10px;
+    width: 100%;
+}
+
+.gen-skills {
+    list-style: none;
+    padding: 0;
+    width: 100%;
+}
+
+.gen-skill-item {
+    font-size: 11px;
+    color: var(--text-muted);
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.gen-stats {
+    width: 100%;
+}
+
+.gen-stat-row {
+    display: grid;
+    grid-template-columns: 28px 1fr 28px;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 0;
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+.gen-stat-bar {
+    height: 5px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.gen-stat-bar>div {
+    height: 100%;
+    background: linear-gradient(90deg, var(--blue), var(--purple));
+    border-radius: 3px;
+}
+
+.gen-owned-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(46, 204, 113, 0.2);
+    border: 1px solid rgba(46, 204, 113, 0.4);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 10px;
+    color: var(--green);
+}
+
+.gen-owned {
+    border-color: rgba(46, 204, 113, 0.4) !important;
+}
+
+/* ---- Monsters --------------------------------------------- */
+.mon-card {
+    align-items: flex-start;
+    text-align: left;
+}
+
+.mon-portrait {
+    font-size: 52px;
+    align-self: center;
+    filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.6));
+}
+
+.mon-name {
+    font-family: var(--font-title);
+    font-size: 16px;
+    color: var(--text);
+}
+
+.mon-type-chip {
+    display: inline-block;
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.mon-def {
+    background: rgba(74, 144, 217, 0.25);
+    color: #7cb9f5;
+}
+
+.mon-atk {
+    background: rgba(224, 74, 47, 0.25);
+    color: #f07060;
+}
+
+.mon-trap {
+    background: rgba(155, 89, 182, 0.25);
+    color: #c29de0;
+}
+
+.mon-sup {
+    background: rgba(39, 174, 96, 0.25);
+    color: #5dda9a;
+}
+
+.mon-effect {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--green);
+    background: rgba(39, 174, 96, 0.1);
+    border: 1px solid rgba(39, 174, 96, 0.2);
+    border-radius: 6px;
+    padding: 6px 10px;
+    width: 100%;
+}
+
+/* ---- Gear ------------------------------------------------- */
+.gear-card {
+    background: rgba(255, 255, 255, 0.02);
+    border-style: dashed;
+}
+
+.gear-card .sc-gives {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+    margin: 4px 0;
+}
+
+.stat-ico {
+    background: rgba(125, 200, 255, 0.1);
+    color: #7dc8ff;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 8px;
+    font-weight: 700;
+}
+
+.mon-duration {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.mon-stats {
+    font-size: 12px;
+    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+    padding: 6px 10px;
+    width: 100%;
+}

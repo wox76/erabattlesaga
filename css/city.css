@@ -1,0 +1,225 @@
+/* ============================================================
+   TOTAL BATTLE WAR — City View Styles
+   ============================================================ */
+
+/* ---- City Container --------------------------------------- */
+#view-city {
+    background: radial-gradient(ellipse at 50% 30%, #1a3a6e 0%, #0a1628 70%);
+    padding-bottom: 60px;
+    /* space for queue bar */
+    min-height: 100%;
+    position: relative;
+}
+
+.city-bg {
+    position: relative;
+    width: 100%;
+    padding-top: 100%;
+    /* square */
+    background:
+        radial-gradient(ellipse at 50% 70%, #1c3d1c 0%, transparent 60%),
+        radial-gradient(ellipse at 50% 50%, #172d50 0%, #0a1628 80%);
+    overflow: hidden;
+}
+
+/* Decorative overlays */
+.city-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Ccircle cx='30' cy='30' r='0.5' fill='%23ffffff22'/%3E%3C/svg%3E"),
+        linear-gradient(160deg, rgba(30, 60, 100, 0.2) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+/* Ground plane */
+.city-ground {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 45%;
+    background: linear-gradient(180deg,
+            rgba(28, 61, 28, 0.0) 0%,
+            rgba(28, 61, 28, 0.3) 40%,
+            rgba(20, 45, 20, 0.5) 100%);
+    border-radius: 50% 50% 0 0 / 20% 20% 0 0;
+}
+
+/* ---- Building Slots --------------------------------------- */
+#city-buildings {
+    position: absolute;
+    inset: 0;
+}
+
+.building-slot {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    cursor: pointer;
+    transition: transform 0.15s;
+    z-index: 10;
+}
+
+.building-slot:active {
+    transform: translate(-50%, -50%) scale(0.92);
+}
+
+.building-icon {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6));
+    transition: filter 0.2s;
+}
+
+.building-img {
+    /* width: 100%; */
+    height: 120%;
+    object-fit: cover;
+    border-radius: 8px;
+    /* border: 1px solid rgba(245, 200, 66, 0.4); */
+    /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); */
+}
+
+.building-slot.built .building-icon {
+    filter: drop-shadow(0 2px 12px rgba(245, 200, 66, 0.3));
+}
+
+.building-slot.in-progress .building-icon {
+    animation: constructing 2s ease-in-out infinite;
+}
+
+@keyframes constructing {
+
+    0%,
+    100% {
+        filter: drop-shadow(0 2px 12px rgba(245, 200, 66, 0.2));
+    }
+
+    50% {
+        filter: drop-shadow(0 2px 24px rgba(245, 200, 66, 0.7));
+    }
+}
+
+.building-label {
+    font-size: 9px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+    white-space: nowrap;
+    letter-spacing: 0.3px;
+    background: rgba(0, 0, 0, 0.45);
+    border-radius: 4px;
+    padding: 1px 4px;
+}
+
+.building-level {
+    font-size: 9px;
+    font-weight: 700;
+    background: rgba(245, 200, 66, 0.85);
+    color: #1a0f00;
+    border-radius: 4px;
+    padding: 1px 4px;
+    line-height: 1;
+}
+
+.building-level.max {
+    background: rgba(46, 204, 113, 0.85);
+    color: #0a250f;
+}
+
+.building-constructing {
+    font-size: 10px;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.building-slot.empty .building-icon.empty-icon {
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1.5px dashed rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.25);
+    overflow: hidden;
+}
+
+.queue-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+/* ---- City Info Strip -------------------------------------- */
+.city-info-strip {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 16px;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid var(--border);
+}
+
+.city-power {
+    font-size: 13px;
+    color: var(--gold);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.city-castle-level {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* ---- Production Preview ----------------------------------- */
+.prod-preview {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.prod-chip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.prod-chip span:first-child {
+    font-size: 13px;
+}
+
+.prod-chip .prod-rate {
+    color: var(--green);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.prod-chip .prod-negative {
+    color: var(--ember);
+}

@@ -1,0 +1,139 @@
+/* ============================================================
+   TOTAL BATTLE WAR  —  Activities Styles
+   ============================================================ */
+
+.activities-empty {
+    padding: 80px 40px;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.ae-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.3;
+}
+
+.activities-empty h3 {
+    color: var(--text);
+    margin-bottom: 10px;
+    font-family: var(--font-title);
+}
+
+.activities-empty p {
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.activity-list {
+    padding: 10px 16px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.ai-icon-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.activity-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ai-build {
+    background: rgba(245, 200, 66, 0.1);
+    border: 1px solid rgba(245, 200, 66, 0.2);
+}
+
+.ai-research {
+    background: rgba(155, 89, 182, 0.1);
+    border: 1px solid rgba(155, 89, 182, 0.2);
+}
+
+.ai-train {
+    background: rgba(224, 74, 47, 0.1);
+    border: 1px solid rgba(224, 74, 47, 0.2);
+}
+
+.ai-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.ai-name {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ai-timer {
+    font-size: 12px;
+    color: var(--gold);
+    font-weight: 700;
+    margin-bottom: 6px;
+    font-variant-numeric: tabular-nums;
+}
+
+.ai-progress-bg {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.ai-progress-fill {
+    height: 100%;
+    background: var(--gold);
+    border-radius: 2px;
+    transition: width 0.3s;
+}
+
+.ai-speedup {
+    background: linear-gradient(135deg, #7dc8ff, #4a90d9);
+    border: none;
+    color: #0c1830;
+    font-weight: 800;
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    cursor: pointer;
+    min-width: 54px;
+    font-size: 10px;
+    box-shadow: 0 4px 10px rgba(74, 144, 217, 0.3);
+}
+
+.ai-speedup:active {
+    transform: scale(0.95);
+    opacity: 0.9;
+}
+
+.ai-speedup span {
+    font-size: 13px;
+}

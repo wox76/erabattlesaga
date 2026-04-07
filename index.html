@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a1628">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Era: Battle War</title>
+  <meta name="description"
+    content="Costruisci la tua città, allena le tue truppe e conquista il mondo. Un gioco di strategia mobile.">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/city.css">
+  <link rel="stylesheet" href="css/panels.css">
+  <link rel="stylesheet" href="css/store.css">
+  <link rel="stylesheet" href="css/activities.css">
+  <style>
+    @keyframes floatLogo {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+      100% { transform: translateY(0); }
+    }
+    /* Quick additions for modal and selection */
+    #modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: 20px;
+    }
+
+    #modal-overlay.active {
+      display: flex;
+      animation: fadeIn 0.3s forwards;
+    }
+
+    .modal-box {
+      background: var(--bg-card);
+      border: 1px solid var(--gold);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 320px;
+      padding: 20px;
+      box-shadow: 0 0 30px rgba(245, 200, 66, 0.15);
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      font-size: 20px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    #modal-title {
+      font-family: var(--font-title);
+      font-size: 20px;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+
+    #modal-body {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    #hero-selection-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--bg-deep);
+      z-index: 1500;
+      display: none;
+      flex-direction: column;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .hero-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 0;
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      min-height: 420px;
+      justify-content: flex-end;
+      background-size: cover;
+      background-position: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .hero-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(245, 200, 66, 0.2);
+    }
+
+    .hero-card-content {
+      width: 100%;
+      padding: 20px;
+      background: linear-gradient(0deg, rgba(10, 22, 40, 0.95) 0%, rgba(10, 22, 40, 0.8) 70%, transparent 100%);
+      z-index: 2;
+    }
+
+    .hero-ico {
+      display: none; /* Hidden when using background images */
+    }
+
+    .hero-name {
+      font-family: var(--font-title);
+      font-size: 22px;
+      color: var(--gold);
+      margin-bottom: 4px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .hp-stat {
+      font-size: 14px;
+      color: var(--blue);
+      font-weight: 700;
+      margin-bottom: 10px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    }
+
+    .hp-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      line-height: 1.4;
+      padding: 0 10px;
+    }
+
+    .nav-icon.store {
+      color: #ff9800;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ============================================================
+     SPLASH / NEW GAME
+     ============================================================ -->
+  <div id="splash-screen">
+    <img src="assets/logo.png" alt="Logo" style="width: 117%;animation: floatLogo 3s ease-in-out infinite;">
+    <p class="splash-sub">Costruisci la tua fortezza, addestra un esercito e domina il regno.</p>
+    <input type="text" id="city-name-input" class="splash-input" placeholder="Nome della tua città" maxlength="20"
+      value="Fortezza">
+    <button class="btn btn-start" id="btn-start-game">⚔️ Inizia la Conquista</button>
+    <p id="load-status" style="font-size:11px;color:var(--text-muted)"></p>
+  </div>
+
+  <!-- ============================================================
+     HERO SELECTION
+     ============================================================ -->
+  <div id="hero-selection-screen">
+    <h2 class="center" style="color:var(--gold); margin-bottom:10px;">Scegli il tuo Generale</h2>
+    <p class="center muted" style="font-size:13px; margin-bottom:20px;">Il tuo primo comandante guiderà la crescita del
+      regno.</p>
+    <div id="hero-list"></div>
+  </div>
+
+  <!-- ============================================================
+     MAIN APP
+     ============================================================ -->
+  <div id="app" style="display:none">
+
+    <!-- TOP HUD -->
+    <div id="top-hud">
+      <div class="hud-hero-thumb" id="hud-hero-thumb" onclick="App.switchView('hall')">👤</div>
+      <div class="hud-left-col">
+        <div class="hud-city-name" id="hud-city-name">—</div>
+        <div class="hud-row-low">
+          <div class="hud-power" id="hud-power">💪 0</div>
+          <div class="res-chip res-silver-compact" id="res-silver">
+            <span class="res-icon">💰</span>
+            <span class="res-val" id="val-silver">0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud-right-col">
+        <div id="hud-gems" class="hud-gems-tag">💎 0</div>
+        <div class="hud-resources-grid">
+          <div class="res-chip" id="res-lumber">
+            <span class="res-icon">🪵</span>
+            <span class="res-val" id="val-lumber">0</span>
+          </div>
+          <div class="res-chip" id="res-iron">
+            <span class="res-icon">⚙️</span>
+            <span class="res-val" id="val-iron">0</span>
+          </div>
+          <div class="res-chip" id="res-stone">
+            <span class="res-icon">🪨</span>
+            <span class="res-val" id="val-stone">0</span>
+          </div>
+          <div class="res-chip" id="res-food">
+            <span class="res-icon">🌾</span>
+            <span class="res-val" id="val-food">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEWS -->
+    <div id="views">
+
+      <!-- CITY VIEW -->
+      <div id="view-city" class="view active">
+        <div class="city-bg">
+          <div class="city-ground"></div>
+          <div id="city-buildings"></div>
+        </div>
+        <div class="city-info-strip">
+          <div class="city-power">⚔️ <span id="city-power-val">0</span> Potere</div>
+          <div class="city-castle-level">Castello Lv <span id="castle-level-val">1</span></div>
+        </div>
+        <div class="prod-preview" id="prod-preview"></div>
+        <div id="build-queue-bar" class="hidden"></div>
+      </div>
+
+      <!-- ARMY VIEW -->
+      <div id="view-army" class="view">
+        <div id="army-content"></div>
+      </div>
+
+      <!-- RESEARCH VIEW -->
+      <div id="view-research" class="view">
+        <div id="research-content"></div>
+      </div>
+
+      <!-- WORLD VIEW -->
+      <div id="view-world" class="view">
+        <div id="world-content"></div>
+      </div>
+
+      <!-- STORE VIEW -->
+      <div id="view-store" class="view">
+        <div id="store-content"></div>
+      </div>
+
+      <!-- HALL / SETTINGS -->
+      <div id="view-hall" class="view">
+        <div class="hall-header">
+          <div id="hall-hero-status" style="margin-bottom:20px;"></div>
+          <h2>⚔️ Hall of Fame</h2>
+          <div class="hall-power-badge" id="hall-power">0</div>
+          <div class="hall-power-label">Potere Totale</div>
+        </div>
+      </div>
+
+      <!-- SETTINGS & HISTORY VIEW -->
+      <div id="view-settings" class="view">
+        <div class="section-title">⚙️ Opzioni & Cronologia</div>
+
+        <div class="settings-section">
+          <h3>📜 Cronologia Eventi</h3>
+          <div class="notif-log" id="notif-log">
+            <p class="muted center" style="padding:14px">Nessun evento ancora.</p>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>⚙️ Impostazioni Base</h3>
+          <div class="settings-row">
+            <span>💾 Salva manualmente</span>
+            <button class="btn-sm" style="background:var(--blue); border:none;"
+              onclick="App.manualSave()">Salva</button>
+          </div>
+          <div class="settings-row">
+            <span>🗑️ Azzera partita</span>
+            <button class="btn-sm" style="background:var(--ember); border:none;"
+              onclick="App.resetGame()">Reset</button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>🛠️ Sviluppatore</h3>
+          <div class="settings-row">
+            <span>Modalità TESTING (10x 🔥)</span>
+            <label class="switch">
+              <input type="checkbox" id="testing-toggle" onchange="App.toggleTestingMode()">
+              <span class="slider round"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIVITIES VIEW -->
+      <div id="view-activities" class="view">
+        <div id="activities-content"></div>
+      </div>
+
+      <!-- FORGE VIEW -->
+      <div id="view-forge" class="view">
+        <div class="view-header" style="background:#3e2723; border-bottom:1px solid #f5c842;">
+          <button class="back-btn" onclick="App.switchView('city')">←</button>
+          <h2 style="color:#f5c842;">Fucina</h2>
+        </div>
+        <div id="forge-content" class="scroll-content"></div>
+      </div>
+
+    </div><!-- /views -->
+
+    <!-- BOTTOM NAV -->
+    <nav id="bottom-nav">
+      <button class="nav-btn active" id="nav-city" onclick="App.switchView('city')">
+        <span class="nav-icon">🏰</span><span>Città</span>
+      </button>
+      <button class="nav-btn" id="nav-army" onclick="App.switchView('army')">
+        <span class="nav-icon">⚔️</span><span>Esercito</span>
+      </button>
+      <button class="nav-btn" id="nav-research" onclick="App.switchView('research')">
+        <span class="nav-icon">📚</span><span>Ricerca</span>
+      </button>
+      <button class="nav-btn" id="nav-world" onclick="App.switchView('world')">
+        <span class="nav-icon">🗺️</span><span>Mappa</span>
+      </button>
+      <button class="nav-btn" id="nav-store" onclick="App.switchView('store')">
+        <span class="nav-icon store">🎁</span><span>Negozio</span>
+      </button>
+      <button class="nav-btn" id="nav-activities" onclick="App.switchView('activities')">
+        <span class="nav-icon">⏳</span><span>Attività</span>
+      </button>
+      <button class="nav-btn" id="nav-hall" onclick="App.switchView('hall')">
+        <span class="nav-icon">🏆</span><span>Hall</span>
+      </button>
+      <button class="nav-btn" id="nav-settings" onclick="App.switchView('settings')">
+        <span class="nav-icon">⚙️</span><span>Opzioni</span>
+      </button>
+    </nav>
+
+  </div><!-- /app -->
+
+  <!-- MODAL OVERLAY -->
+  <div id="modal-overlay">
+    <div class="modal-box">
+      <span class="modal-close" onclick="Modal.close()">&times;</span>
+      <h3 id="modal-title">Titolo</h3>
+      <div id="modal-body">Contenuto...</div>
+    </div>
+  </div>
+
+  <!-- PANEL OVERLAY -->
+  <div id="panel-overlay" onclick="CityView.closePanel()"></div>
+
+  <!-- SLIDE-UP CITY PANEL -->
+  <div id="city-panel"></div>
+
+  <!-- NOTIFICATION CONTAINER -->
+  <div id="notif-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/city.js"></script>
+  <script src="js/army.js"></script>
+  <script src="js/research.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/activity.js"></script>
+  <script src="js/forge.js"></script>
+  <script>
+    const App = {
+      currentView: 'city',
+
+      init() {
+        const raw = localStorage.getItem('tbw_save_v1');
+        if (raw) {
+          document.getElementById('load-status').textContent = '✅ Salvataggio pronto';
+          document.getElementById('btn-start-game').textContent = '▶ Continua Conquista';
+
+          const resetBtn = document.createElement('button');
+          resetBtn.className = 'btn';
+          resetBtn.style.cssText = 'font-size:13px; padding:12px; max-width:280px; margin-top:10px; background:rgba(224,74,47,0.15); border:1px solid rgba(224,74,47,0.4); color:#f07060;';
+          resetBtn.textContent = '🗑️ Elimina Salvataggio';
+          resetBtn.onclick = () => {
+            if (confirm('Sei sicuro di voler eliminare TUTTI i progressi? Questa azione non può essere annullata.')) {
+              localStorage.removeItem('tbw_save_v1');
+              location.reload();
+            }
+          };
+          document.getElementById('splash-screen').appendChild(resetBtn);
+        }
+
+        document.getElementById('btn-start-game').addEventListener('click', () => {
+          const nameInput = document.getElementById('city-name-input');
+          if (!raw && nameInput.value.trim()) {
+            window.__cityName = nameInput.value.trim();
+          }
+          this.startGame();
+        });
+
+        document.getElementById('city-name-input').addEventListener('keydown', e => {
+          if (e.key === 'Enter') document.getElementById('btn-start-game').click();
+        });
+      },
+
+      startGame() {
+        Game.init();
+        if (window.__cityName && !localStorage.getItem('tbw_save_v1')) {
+          Game.state.cityName = window.__cityName;
+        }
+
+        if (!Game.state.hero.id) {
+          this.showHeroSelection();
+        } else {
+          this.launchApp();
+        }
+      },
+
+      showHeroSelection() {
+        document.getElementById('splash-screen').classList.add('hidden');
+        const screen = document.getElementById('hero-selection-screen');
+        screen.style.display = 'flex';
+
+        const list = document.getElementById('hero-list');
+        list.innerHTML = STARTING_GENERALS.map(gen => `
+      <div class="hero-card" style="background-image: url('${gen.icon}')" onclick="App.selectHero('${gen.id}')">
+        <div class="hero-card-content">
+          <div class="hero-name">${gen.name}</div>
+          <div class="hp-stat">${gen.passive}</div>
+          <p class="hp-desc">${gen.description}</p>
+          <button class="btn btn-upgrade" style="width:100%">Scegli</button>
+        </div>
+      </div>
+    `).join('');
+      },
+
+      selectHero(id) {
+        Game.state.hero.id = id;
+        Game.save();
+        document.getElementById('hero-selection-screen').style.display = 'none';
+        this.launchApp();
+        CityView.showToast('Generale scelto! Gloria a te.', 'success');
+      },
+
+      launchApp() {
+        document.getElementById('splash-screen').classList.add('hidden');
+        document.getElementById('app').style.display = 'flex';
+
+        CityView.init();
+        ArmyView.init();
+        ResearchView.init();
+        WorldView.init();
+        StoreView.init();
+        ActivityView.init();
+        ForgeView.init();
+
+        Game.on('tick', () => this.updateHUD());
+        Game.on('notification', n => this.showNotification(n));
+
+        this.updateHUD();
+        setInterval(() => Game.save(), 30000);
+      },
+
+      switchView(name) {
+        this.currentView = name;
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+        const viewEl = document.getElementById(`view-${name}`);
+        if (viewEl) viewEl.classList.add('active');
+
+        const navEl = document.getElementById(`nav-${name}`);
+        if (navEl) navEl.classList.add('active');
+
+        if (name === 'city') CityView.render();
+        if (name === 'army') ArmyView.render();
+        if (name === 'research') ResearchView.render();
+        if (name === 'activities') ActivityView.render();
+        if (name === 'world') WorldView.render();
+        if (name === 'store') StoreView.render();
+        if (name === 'hall') this.renderHall();
+        if (name === 'settings') this.renderSettings();
+        if (name === 'forge') ForgeView.render();
+      },
+
+      renderSettings() {
+        this.updateNotifLog();
+        const toggle = document.getElementById('testing-toggle');
+        if (toggle) toggle.checked = Game.state.testingMode;
+      },
+
+      toggleTestingMode() {
+        const active = Game.toggleTestingMode();
+        CityView.showToast(active ? 'Testing Mode: ON (10x Speed!) 🔥' : 'Testing Mode: OFF', active ? 'success' : 'info');
+        this.updateHUD();
+      },
+
+      updateHUD() {
+        const s = Game.state;
+        const prod = Game.getProduction();
+        const storage = Game.getStorage();
+
+        document.getElementById('hud-city-name').textContent = s.cityName || 'Fortezza';
+        document.getElementById('hud-gems').textContent = '💎 ' + (s.gems || 0);
+
+        const RESOURCES = ['lumber', 'iron', 'stone', 'food', 'silver'];
+        RESOURCES.forEach(res => {
+          const val = s.resources[res] || 0;
+          const cap = storage[res];
+          const rate = prod[res];
+          const valEl = document.getElementById(`val-${res}`);
+          const prodEl = document.getElementById(`prod-${res}`);
+          const chipEl = document.getElementById(`res-${res}`);
+
+          if (valEl) valEl.textContent = Game.formatNumber(val);
+          if (prodEl) {
+            const sign = rate >= 0 ? '+' : '';
+            prodEl.textContent = sign + Game.formatNumber(rate) + '/h';
+            prodEl.style.color = rate < 0 ? 'var(--ember)' : rate > 0 ? 'var(--green)' : 'var(--text-muted)';
+          }
+          if (chipEl) chipEl.classList.toggle('near-full', val >= cap * 0.9);
+        });
+
+        const power = Game.getTotalPower();
+        document.getElementById('hud-power').textContent = '💪 ' + Game.formatNumber(power);
+        if (document.getElementById('city-power-val')) document.getElementById('city-power-val').textContent = Game.formatNumber(power);
+        if (document.getElementById('castle-level-val')) document.getElementById('castle-level-val').textContent = Game.getCastleLevel();
+
+        // Update hero thumb
+        const heroThumb = document.getElementById('hud-hero-thumb');
+        if (heroThumb) {
+          const gen = STARTING_GENERALS.find(g => g.id === s.hero.id) || STORE_GENERALS.find(g => g.id === s.hero.id);
+          if (gen && gen.icon.includes('/')) {
+            heroThumb.style.backgroundImage = `url('${gen.icon}')`;
+            heroThumb.textContent = '';
+          } else {
+            heroThumb.style.backgroundImage = 'none';
+            heroThumb.textContent = gen ? gen.icon : '👤';
+          }
+        }
+
+        this.updateProdPreview(prod);
+      },
+
+      updateProdPreview(prod) {
+        const el = document.getElementById('prod-preview');
+        if (!el) return;
+        const icons = { lumber: '🪵', iron: '⚙️', stone: '🪨', food: '🌾', silver: '💰' };
+        el.innerHTML = Object.entries(prod).map(([res, rate]) => {
+          const sign = rate >= 0 ? '+' : '';
+          return `<div class="prod-chip">${icons[res]} <span class="${rate < 0 ? 'prod-negative' : 'prod-rate'}">${sign}${Game.formatNumber(rate)}/h</span></div>`;
+        }).join('');
+      },
+
+      showNotification(n) {
+        const icons = { build: '🔨', train: '⚔️', research: '📚', offline: '💤', info: 'ℹ️' };
+        const container = document.getElementById('notif-container');
+        if (!container) return;
+        const el = document.createElement('div');
+        el.className = `notif-item notif-${n.type}`;
+        el.textContent = (icons[n.type] || 'ℹ️') + ' ' + n.msg;
+        container.prepend(el);
+        setTimeout(() => el.remove(), 5000);
+        this.updateNotifLog();
+      },
+
+      renderHall() {
+        const power = Game.getTotalPower();
+        document.getElementById('hall-power').textContent = Game.formatNumber(power);
+
+        // Show active hero
+        const hero = Game.state.hero;
+        const gen = STARTING_GENERALS.find(g => g.id === hero.id) || STORE_GENERALS.find(g => g.id === hero.id);
+        const hallHero = document.getElementById('hall-hero-status');
+        if (gen && hallHero) {
+          const bgAttr = gen.icon.includes('/') ? `style="background-image: url('${gen.icon}'); margin:0 auto; max-width:280px; cursor:default;"` : `style="margin:0 auto; max-width:280px; cursor:default;"`;
+          hallHero.innerHTML = `
+        <div class="hero-card" ${bgAttr}>
+          <div class="hero-card-content">
+            <div class="hero-name">${gen.name}</div>
+            <div style="font-size:12px; color:var(--blue); weight:700;">${gen.passive}</div>
+            <div style="font-size:11px; margin:10px 0; color:var(--text-muted);">
+              ⚔️ ${Game.getHeroBonuses().attack} 🛡️ ${Game.getHeroBonuses().defense} ⚡ ${Game.getHeroBonuses().speed}
+            </div>
+            
+            <div class="hero-equip-grid" style="grid-template-columns: repeat(2, 1fr); gap: 8px;">
+              ${this.renderEquipSlot('weapon', 'Arma')}
+              ${this.renderEquipSlot('armor', 'Armatura')}
+              ${this.renderEquipSlot('helmet', 'Elmo')}
+              ${this.renderEquipSlot('shield', 'Scudo')}
+              ${this.renderEquipSlot('jewelry', 'Gioielli')}
+            </div>
+          </div>
+        </div>
+      `;
+        }
+      },
+
+      renderEquipSlot(slot, label) {
+        const itemId = Game.state.hero.equipment[slot];
+        const item = itemId ? STORE_EQUIPMENT.find(e => e.id === itemId) : null;
+
+        if (item) {
+          return `
+            <div class="equip-slot filled" onclick="App.openEquipPicker('${slot}')">
+              <div class="es-label">${label}</div>
+              <div class="es-icon">${item.icon}</div>
+              <div class="es-name">${item.name}</div>
+            </div>`;
+        } else {
+          const emptyIcons = { weapon: '⚔️', armor: '👕', helmet: '🪖', shield: '🛡️', jewelry: '💍' };
+          return `
+            <div class="equip-slot" onclick="App.openEquipPicker('${slot}')">
+              <div class="es-label">${label}</div>
+              <div class="es-empty-icon">${emptyIcons[slot]}</div>
+              <div class="es-name">Vuoto</div>
+            </div>`;
+        }
+      },
+
+      openEquipPicker(slot) {
+        const inv = Game.state.hero.inventory || [];
+        const slotCategoryMap = { weapon: 'Armi', armor: 'Armature', helmet: 'Elmi', shield: 'Scudi', jewelry: 'Gioielli' };
+        const category = slotCategoryMap[slot];
+
+        const possibleItems = inv.map(id => STORE_EQUIPMENT.find(e => e.id === id))
+          .filter(e => e && e.category === category);
+
+        let html = '<div class="inventory-modal">';
+        if (possibleItems.length === 0) {
+          html += `
+            <div class="center" style="padding:20px">
+              <p class="muted" style="margin-bottom:15px">Nessun oggetto disponibile per questo slot.</p>
+              <button class="btn btn-upgrade" style="width:auto; padding:10px 24px; font-size:13px;" 
+                onclick="Modal.close(); App.switchView('store'); StoreView.setTab('equipment', '${category}')">
+                Vai al Negozio 💎
+              </button>
+            </div>`;
+        } else {
+          html += possibleItems.map(item => `
+            <div class="inventory-item" onclick="App.equipItem('${slot}', '${item.id}')">
+              <div class="inv-ico">${item.icon}</div>
+              <div class="inv-info">
+                <div class="inv-name">${item.name}</div>
+                <div class="inv-stats">${Object.entries(item.stats).map(([k, v]) => `${k.toUpperCase()} +${v}`).join(' · ')}</div>
+              </div>
+            </div>
+          `).join('');
+        }
+
+        // Add "Unequip" option if slot is filled
+        if (Game.state.hero.equipment[slot]) {
+          html += `
+            <div class="inventory-item" onclick="App.equipItem('${slot}', null)" style="border-top:1px solid #444; margin-top:10px;">
+              <div class="inv-ico">🚫</div>
+              <div class="inv-info">
+                <div class="inv-name" style="color:var(--ember)">Rimuovi Equipaggiamento</div>
+              </div>
+            </div>`;
+        }
+
+        html += '</div>';
+        Modal.show(`Equipaggiamento: ${category}`, html);
+      },
+
+      equipItem(slot, itemId) {
+        Game.state.hero.equipment[slot] = itemId;
+        Game.save();
+        Modal.close();
+        this.renderHall();
+        CityView.showToast(itemId ? 'Oggetto equipaggiato! 🛡️' : 'Oggetto rimosso.', 'success');
+      },
+
+      updateNotifLog() {
+        const el = document.getElementById('notif-log');
+        if (!el || !Game.notifications.length) return;
+        const icons = { build: '🔨', train: '⚔️', research: '📚', offline: '💤', info: 'ℹ️' };
+        el.innerHTML = Game.notifications.map(n => {
+          const ago = Math.round((Date.now() - n.time) / 60000);
+          return `<div class="notif-log-item"><span class="nl-icon">${icons[n.type] || 'ℹ️'}</span><span class="nl-msg">${n.msg}</span><span class="nl-time">${ago < 1 ? 'ora' : ago + 'm fa'}</span></div>`;
+        }).join('');
+      },
+
+      manualSave() { Game.save(); CityView.showToast('Salvataggio ok! ✅', 'success'); },
+      resetGame() {
+        Modal.show('Cancellazione Progressi', `
+          <div class="center">
+            <p style="margin-bottom:20px; color:var(--ember); font-weight:700;">Vuoi davvero azzerare la partita?</p>
+            <p style="font-size:12px; margin-bottom:20px; color:var(--text-muted);">Tutti i tuoi edifici, truppe e gemme verranno eliminati permanentemente.</p>
+            <div style="display:flex; gap:10px; justify-content:center;">
+              <button class="btn btn-upgrade" style="background:var(--bg-card); border-color:var(--border); width:auto; padding:0 20px;" onclick="Modal.close()">Annulla</button>
+              <button class="btn btn-upgrade" style="background:var(--ember); width:auto; padding:0 20px;" onclick="App.confirmReset()">Sì, Cancella Tutto</button>
+            </div>
+          </div>
+        `);
+      },
+      confirmReset() { Game.deleteSave(); location.reload(); }
+    };
+
+    App.init();
+  </script>
+</body>
+
+</html>
