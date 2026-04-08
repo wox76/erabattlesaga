@@ -20,6 +20,12 @@ const CityView = {
         if (!container) return;
         container.innerHTML = '';
 
+        const castleContainer = document.createElement('div');
+        castleContainer.className = 'castle-container';
+        
+        const gridContainer = document.createElement('div');
+        gridContainer.className = 'buildings-grid';
+
         CITY_SLOTS.forEach(slot => {
             const bData = Game.state.buildings[slot.id];
             const inQueue = Game.state.buildQueue.find(q => q.slotId === slot.id);
@@ -27,8 +33,6 @@ const CityView = {
             const el = document.createElement('div');
             el.className = 'building-slot' + (bData ? ' built' : ' empty') + (inQueue ? ' in-progress' : '');
             el.id = slot.id;
-            el.style.left = slot.x + '%';
-            el.style.top = slot.y + '%';
 
             if (bData) {
                 const bDef = BUILDINGS[bData.buildingId];
@@ -48,9 +52,17 @@ const CityView = {
             }
 
             el.addEventListener('click', () => this.openPanel(slot));
-            container.appendChild(el);
+            
+            if (slot.id === 'slot_castle') {
+                castleContainer.appendChild(el);
+            } else {
+                gridContainer.appendChild(el);
+            }
         });
 
+        container.appendChild(castleContainer);
+        container.appendChild(gridContainer);
+        
         this.refreshQueueBar();
     },
 

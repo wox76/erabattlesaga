@@ -73,11 +73,23 @@ body {
   background: linear-gradient(180deg, #070f20 0%, #0d1b3e 100%);
   border-bottom: 1px solid var(--border);
   padding: 8px 10px;
-  min-height: 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.hud-top-row {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  flex-shrink: 0;
+  align-items: center;
+  width: 100%;
+}
+
+.hud-bottom-row {
+  display: flex;
+  width: 100%;
+  justify-content: center;
 }
 
 .hud-hero-thumb {
@@ -156,9 +168,10 @@ body {
 
 .hud-resources-grid {
   display: flex;
-  gap: 4px;
-  justify-content: flex-end;
+  gap: 6px;
+  justify-content: center;
   flex-wrap: wrap;
+  width: 100%;
 }
 
 /* ---- Hero Equipment --------------------------------------- */
@@ -271,14 +284,14 @@ body {
 }
 
 .res-chip {
-    /* display: flex; */
+    display: flex;
     align-items: center;
     gap: 3px;
     background: rgba(0, 0, 0, 0.25);
     border: 1px solid var(--border);
     border-radius: 4px;
-    /* padding: 2px 6px; */
-    /* font-size: 12px; */
+    padding: 2px 6px;
+    font-size: 12px;
     font-weight: 600;
     min-width: 44px;
 }
@@ -286,10 +299,6 @@ body {
 .res-chip.near-full {
   background: rgba(245, 200, 66, 0.1);
   border-color: var(--gold);
-}
-
-.res-chip .res-icon {
-  /* font-size: 10px; */
 }
 
 .res-chip .res-val {
@@ -326,14 +335,14 @@ body {
 
 /* ---- Bottom Nav ------------------------------------------- */
 #bottom-nav {
-  height: var(--nav-h);
+  height: auto;
   background: linear-gradient(0deg, #070f20 0%, #0d1b3e 100%);
   border-top: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
   flex-shrink: 0;
-  padding: 0 4px env(safe-area-inset-bottom, 0);
+  padding: 4px env(safe-area-inset-bottom, 4px);
 }
 
 .nav-btn {
@@ -886,7 +895,12 @@ body {
 /* ---- Splash / New Game ------------------------------------ */
 #splash-screen {
     position: fixed;
-    inset: 0;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    max-width: 480px;
     z-index: 1000;
     background: #040b1e;
     display: flex;
@@ -896,7 +910,6 @@ body {
     gap: 24px;
     padding-bottom: 29px;
     padding-top: 20px;
-    /* padding: 0px 24px; */
 }
 
 #splash-screen.hidden {

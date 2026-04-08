@@ -49,8 +49,8 @@ const WorldView = {
         const container = document.getElementById('world-content');
         if (!container) return;
 
-        const tileEmoji = {
-            plains: '🟩', forest: '🌲', ironmine: '⛏️', stonequarry: '🪨',
+        const tileIcons = {
+            plains: 'assets/map_forest.jpg', forest: '🌲', ironmine: '⛏️', stonequarry: '🪨',
             wheat_field: '🌾', monster_goblin: '👺', monster_orc: '👹',
             monster_dragon: '🐉', player_city: '🏰'
         };
@@ -61,22 +61,37 @@ const WorldView = {
             monster_dragon: 'Drago', player_city: 'La Tua Città'
         };
 
-        // Render a viewport of 9×9 tiles centered on viewX/Y
-        const halfView = 4;
-        const startX = Math.max(0, Math.min(this.MAP_SIZE - 9, this.viewX - halfView));
-        const startY = Math.max(0, Math.min(this.MAP_SIZE - 9, this.viewY - halfView));
-
+        // Render ALL tiles for the drag-to-scroll map
+        const tileW = 44;
+        const rowH = 39; // 52px height * 0.75 for interlock
         let gridHtml = '';
-        for (let y = startY; y < Math.min(startY + 9, this.MAP_SIZE); y++) {
-            for (let x = startX; x < Math.min(startX + 9, this.MAP_SIZE); x++) {
+        
+        for (let y = 0; y < this.MAP_SIZE; y++) {
+            const isOddRow = y % 2 !== 0; 
+            const rowTop = y * rowH;
+            
+            for (let x = 0; x < this.MAP_SIZE; x++) {
                 const tile = this.tiles.find(t => t.x === x && t.y === y);
                 if (!tile) continue;
+                
                 const isPlayer = tile.type === 'player_city';
+                const icon = tileIcons[tile.type];
+                const tileLeft = x * tileW + (isOddRow ? (tileW / 2) : 0);
+                
+                let contentHtml = '';
+                if (tile.type !== 'plains') {
+                    const iconDisplay = icon.includes('/') 
+                        ? `<img src="${icon}" class="tile-img" alt="">`
+                        : `<span class="tile-emoji">${icon}</span>`;
+                    contentHtml = `<div class="tile-content">${iconDisplay}</div>`;
+                }
+
                 gridHtml += `
           <div class="world-tile ${tile.type} ${isPlayer ? 'player-tile' : ''}"
                onclick="WorldView.clickTile(${x},${y})"
-               title="${tileLabels[tile.type] || tile.type}">
-            <span class="tile-emoji">${tileEmoji[tile.type] || '🟩'}</span>
+               title="${tileLabels[tile.type] || tile.type}"
+               style="left: ${tileLeft}px; top: ${rowTop}px;">
+            <div class="tile-inner">${contentHtml}</div>
           </div>`;
             }
         }
@@ -99,36 +114,114 @@ const WorldView = {
         }
 
         container.innerHTML = `
-      <div class="world-header">
-        <div class="world-nav-btns">
-          <button onclick="WorldView.pan(0,-1)">▲</button>
-          <div>
-            <button onclick="WorldView.pan(-1,0)">◀</button>
-            <button onclick="WorldView.pan(1,0)">▶</button>
+      <div class="world-header" style="justify-content: flex-end; display: flex; padding: 10px;">
+        <button class="btn btn-sm" onclick="WorldView.centerOnCity()">🏰 Centra Città</button>
+      </div>
+      <div class="world-grid-container" id="world-drag-container">
+        <div class="world-grid">${gridHtml}</div>
+      </div>
+      <div style="margin-top: 10px;">
+          <div class="world-legend">
+            ${Object.entries(tileIcons).filter(([k]) => k !== 'plains').map(([k, ico]) =>
+                `<span>${ico} ${tileLabels[k]}</span>`
+            ).join('')}
           </div>
-          <button onclick="WorldView.pan(0,1)">▼</button>
-        </div>
-        <button class="btn btn-sm" onclick="WorldView.centerOnCity()">🏰 Centra</button>
+          <div id="world-marches">${marchesHtml}</div>
       </div>
-      <div class="world-grid">${gridHtml}</div>
-      <div class="world-legend">
-        ${Object.entries(tileEmoji).filter(([k]) => k !== 'plains').map(([k, ico]) =>
-            `<span>${ico} ${tileLabels[k]}</span>`
-        ).join('')}
-      </div>
-      <div id="world-marches">${marchesHtml}</div>
     `;
+
+        this.initDrag();
     },
 
-    pan(dx, dy) {
-        this.viewX = Math.max(4, Math.min(this.MAP_SIZE - 5, this.viewX + dx));
-        this.viewY = Math.max(4, Math.min(this.MAP_SIZE - 5, this.viewY + dy));
-        this.render();
+    initDrag() {
+        const slider = document.getElementById('world-drag-container');
+        if (!slider) return;
+        
+        let isDown = false;
+        let startX;
+        let startY;
+        let scrollLeft;
+        let scrollTop;
+        let hasDragged = false;
+
+        const startDrag = (e) => {
+            isDown = true;
+            hasDragged = false;
+            slider.style.cursor = 'grabbing';
+            const pageX = e.type.includes('touch') ? e.touches[0].pageX : e.pageX;
+            const pageY = e.type.includes('touch') ? e.touches[0].pageY : e.pageY;
+            startX = pageX - slider.offsetLeft;
+            startY = pageY - slider.offsetTop;
+            scrollLeft = slider.scrollLeft;
+            scrollTop = slider.scrollTop;
+        };
+
+        const stopDrag = (e) => {
+            isDown = false;
+            slider.style.cursor = 'grab';
+            
+            // Restore pointer events so clicks work again
+            const grid = slider.querySelector('.world-grid');
+            if (grid) grid.style.pointerEvents = 'auto';
+
+            if (hasDragged) {
+                setTimeout(() => { hasDragged = false; }, 0); 
+            }
+        };
+
+        const moveDrag = (e) => {
+            if (!isDown) return;
+            e.preventDefault(); // Prevent default mobile scrolling
+            const pageX = e.type.includes('touch') ? e.touches[0].pageX : e.pageX;
+            const pageY = e.type.includes('touch') ? e.touches[0].pageY : e.pageY;
+            const x = pageX - slider.offsetLeft;
+            const y = pageY - slider.offsetTop;
+            const walkX = (x - startX) * 1.5; 
+            const walkY = (y - startY) * 1.5; 
+            
+            if (Math.abs(walkX) > 5 || Math.abs(walkY) > 5) {
+                hasDragged = true;
+                const grid = slider.querySelector('.world-grid');
+                if (grid) grid.style.pointerEvents = 'none';
+            }
+
+            slider.scrollLeft = scrollLeft - walkX;
+            slider.scrollTop = scrollTop - walkY;
+        };
+
+        slider.addEventListener('mousedown', startDrag);
+        slider.addEventListener('mouseleave', stopDrag);
+        slider.addEventListener('mouseup', stopDrag);
+        slider.addEventListener('mousemove', moveDrag);
+        
+        slider.addEventListener('touchstart', startDrag, {passive: false});
+        slider.addEventListener('touchend', stopDrag);
+        slider.addEventListener('touchcancel', stopDrag);
+        slider.addEventListener('touchmove', moveDrag, {passive: false});
+
+        // Center on first render
+        if (!this.hasCentered) {
+            setTimeout(() => {
+                this.centerOnCity();
+                this.hasCentered = true;
+            }, 100);
+        }
     },
 
     centerOnCity() {
-        this.viewX = 10; this.viewY = 10;
-        this.render();
+        const slider = document.getElementById('world-drag-container');
+        if (slider && slider.clientWidth > 0) {
+            const tileW = 44;
+            const rowH = 39; 
+            
+            const centerX = (10 * tileW) + (tileW / 2) - (slider.clientWidth / 2);
+            const centerY = (10 * rowH) + (52 / 2) - (slider.clientHeight / 2);
+            
+            slider.scrollLeft = centerX;
+            slider.scrollTop = centerY;
+        } else if (slider) {
+            setTimeout(() => this.centerOnCity(), 50);
+        }
     },
 
     clickTile(x, y) {

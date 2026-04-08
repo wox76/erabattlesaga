@@ -14,12 +14,12 @@
 .city-bg {
     position: relative;
     width: 100%;
-    padding-top: 100%;
-    /* square */
+    min-height: 100vh;
+    padding-top: 30px;
+    padding-bottom: 80px;
     background:
         radial-gradient(ellipse at 50% 70%, #1c3d1c 0%, transparent 60%),
         radial-gradient(ellipse at 50% 50%, #172d50 0%, #0a1628 80%);
-    overflow: hidden;
 }
 
 /* Decorative overlays */
@@ -49,24 +49,40 @@
 
 /* ---- Building Slots --------------------------------------- */
 #city-buildings {
-    position: absolute;
-    inset: 0;
-}
-
-.building-slot {
-    position: absolute;
-    transform: translate(-50%, -50%);
+    position: relative;
+    z-index: 10;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
+    width: 100%;
+}
+
+.castle-container {
+    margin-bottom: 30px;
+}
+
+.buildings-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px 10px;
+    width: 100%;
+    max-width: 440px;
+    padding: 0 10px;
+}
+
+.building-slot {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
     cursor: pointer;
     transition: transform 0.15s;
     z-index: 10;
 }
 
 .building-slot:active {
-    transform: translate(-50%, -50%) scale(0.92);
+    transform: scale(0.92);
 }
 
 .building-icon {

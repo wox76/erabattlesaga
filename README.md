@@ -43,5 +43,18 @@ Espandi la tua influenza costruendo strutture vitali:
 3. Seleziona il tuo Generale.
 4. Inizia a costruire la tua prima Segheria!
 
+## 🎨 Novità Versione 2.0 (Modernizzazione)
+
+Abbiamo recentemente rinnovato l'interfaccia di gioco per renderla più moderna, pulita e responsiva:
+
+- **Layout Responsivo**: Il gioco ora si adatta a qualsiasi schermo, dai telefoni quadrati ai monitor desktop ultra-wide, mantenendo un'interfaccia centrale focalizzata di 480px.
+- **HUD & Navigazione**: Barra superiore e menu inferiore riorganizzati su due righe per una migliore leggibilità e accessibilità da mobile.
+- **Griglia Città**: Il layout della città è ora ordinato e dinamico, con il Castello in evidenza e gli edifici disposti in una griglia pulita.
+- **Mappa Esagonale Board-Game Style**:
+  - Transizione a una **griglia esagonale** fluida.
+  - Nuovo sistema **Drag-to-Pan** (trascina per spostarti) che sostituisce le vecchie frecce direzionali.
+  - Palette cromatica in stile **Pastello Tenue** per un look professionale e pulito.
+  - Rimozione di texture pesanti in favore di un design minimalista e moderno.
+
 ---
 *Creato con passione per dominatori e strateghi.*

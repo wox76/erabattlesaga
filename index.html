@@ -28,8 +28,11 @@
     #modal-overlay {
       position: fixed;
       top: 0;
+      bottom: 0;
       left: 0;
-      width: 100%;
+      right: 0;
+      margin: 0 auto;
+      max-width: 480px;
       height: 100%;
       background: rgba(0, 0, 0, 0.85);
       backdrop-filter: blur(4px);
@@ -81,8 +84,11 @@
     #hero-selection-screen {
       position: fixed;
       top: 0;
+      bottom: 0;
       left: 0;
-      width: 100%;
+      right: 0;
+      margin: 0 auto;
+      max-width: 480px;
       height: 100%;
       background: var(--bg-deep);
       z-index: 1500;
@@ -165,8 +171,7 @@
      SPLASH / NEW GAME
      ============================================================ -->
   <div id="splash-screen">
-    <img src="assets/logo.png" alt="Logo" style="width: 117%;animation: floatLogo 3s ease-in-out infinite;">
-    <p class="splash-sub">Costruisci la tua fortezza, addestra un esercito e domina il regno.</p>
+    <img src="assets/logo.png" alt="Logo" style="width: 100%; max-width: 320px; animation: floatLogo 3s ease-in-out infinite;">
     <input type="text" id="city-name-input" class="splash-input" placeholder="Nome della tua città" maxlength="20"
       value="Fortezza">
     <button class="btn btn-start" id="btn-start-game">⚔️ Inizia la Conquista</button>
@@ -190,20 +195,20 @@
 
     <!-- TOP HUD -->
     <div id="top-hud">
-      <div class="hud-hero-thumb" id="hud-hero-thumb" onclick="App.switchView('hall')">👤</div>
-      <div class="hud-left-col">
-        <div class="hud-city-name" id="hud-city-name">—</div>
-        <div class="hud-row-low">
-          <div class="hud-power" id="hud-power">💪 0</div>
-          <div class="res-chip res-silver-compact" id="res-silver">
-            <span class="res-icon">💰</span>
-            <span class="res-val" id="val-silver">0</span>
+      <div class="hud-top-row">
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div class="hud-hero-thumb" id="hud-hero-thumb" onclick="App.switchView('hall')">👤</div>
+          <div class="hud-left-col">
+            <div class="hud-city-name" id="hud-city-name">—</div>
+            <div class="hud-power" id="hud-power">💪 0</div>
           </div>
         </div>
+        <div class="hud-right-col">
+          <div id="hud-gems" class="hud-gems-tag">💎 0</div>
+        </div>
       </div>
-
-      <div class="hud-right-col">
-        <div id="hud-gems" class="hud-gems-tag">💎 0</div>
+      
+      <div class="hud-bottom-row">
         <div class="hud-resources-grid">
           <div class="res-chip" id="res-lumber">
             <span class="res-icon">🪵</span>
@@ -220,6 +225,10 @@
           <div class="res-chip" id="res-food">
             <span class="res-icon">🌾</span>
             <span class="res-val" id="val-food">0</span>
+          </div>
+          <div class="res-chip res-silver-compact" id="res-silver">
+            <span class="res-icon">💰</span>
+            <span class="res-val" id="val-silver">0</span>
           </div>
         </div>
       </div>
@@ -336,11 +345,11 @@
       <button class="nav-btn" id="nav-research" onclick="App.switchView('research')">
         <span class="nav-icon">📚</span><span>Ricerca</span>
       </button>
-      <button class="nav-btn" id="nav-world" onclick="App.switchView('world')">
-        <span class="nav-icon">🗺️</span><span>Mappa</span>
-      </button>
       <button class="nav-btn" id="nav-store" onclick="App.switchView('store')">
         <span class="nav-icon store">🎁</span><span>Negozio</span>
+      </button>
+      <button class="nav-btn" id="nav-world" onclick="App.switchView('world')">
+        <span class="nav-icon">🗺️</span><span>Mappa</span>
       </button>
       <button class="nav-btn" id="nav-activities" onclick="App.switchView('activities')">
         <span class="nav-icon">⏳</span><span>Attività</span>
@@ -407,6 +416,13 @@
         }
 
         document.getElementById('btn-start-game').addEventListener('click', () => {
+          // Request fullscreen
+          if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(err => {
+              console.log(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+            });
+          }
+
           const nameInput = document.getElementById('city-name-input');
           if (!raw && nameInput.value.trim()) {
             window.__cityName = nameInput.value.trim();

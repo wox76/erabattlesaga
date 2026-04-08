@@ -788,70 +788,108 @@ input:checked+.slider:before {
     background: var(--border);
 }
 
-.world-grid {
-    display: grid;
-    grid-template-columns: repeat(9, 1fr);
-    gap: 2px;
-    padding: 0 14px;
+.world-grid-container {
+    width: 100%;
+    height: 400px;
+    overflow: auto;
+    cursor: grab;
     margin-bottom: 10px;
+    padding: 0 14px;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+    user-select: none;
+    -webkit-user-select: none;
+}
+.world-grid-container::-webkit-scrollbar {
+    display: none;
+}
+
+.world-grid {
+    position: relative;
+    width: calc(20 * 44px + 22px);
+    height: calc(20 * 39px + 13px);
+    padding: 20px 14px;
 }
 
 .world-tile {
-    aspect-ratio: 1;
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    width: 44px;
+    height: 52px;
+    position: absolute;
+    cursor: pointer;
+    transition: transform 0.15s;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    background: #e2e2e2; /* Softer Pastel Border */
+}
+
+.tile-inner {
+    position: absolute;
+    inset: 1px; /* The border thickness */
+    background: #a8bc9b; /* Default interior color (Pastel Green) */
+    clip-path: inherit;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: transform 0.15s, background 0.2s;
-    overflow: hidden;
 }
 
 .world-tile:active {
-    transform: scale(0.9);
+    transform: scale(0.95);
+    z-index: 100;
 }
 
-.world-tile.forest {
-    background: rgba(39, 174, 96, 0.15);
-    border-color: rgba(39, 174, 96, 0.3);
+.world-tile:active {
+    filter: brightness(1.4);
+    transform: scale(0.95);
 }
 
-.world-tile.ironmine {
-    background: rgba(52, 73, 94, 0.3);
-    border-color: rgba(52, 73, 94, 0.5);
+.world-tile.even-row:active {
+    transform: translateX(22px) scale(0.95);
 }
 
-.world-tile.stonequarry {
-    background: rgba(127, 140, 141, 0.2);
-    border-color: rgba(127, 140, 141, 0.4);
+.tile-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
 }
 
-.world-tile.wheat_field {
-    background: rgba(241, 196, 15, 0.1);
-    border-color: rgba(241, 196, 15, 0.3);
+.tile-emoji {
+    font-size: 19px;
 }
 
-.world-tile.monster_goblin {
-    background: rgba(231, 76, 60, 0.12);
-    border-color: rgba(231, 76, 60, 0.3);
+.world-tile.forest .tile-inner {
+    background: #7da67d;
 }
 
-.world-tile.monster_orc {
-    background: rgba(192, 57, 43, 0.15);
-    border-color: rgba(192, 57, 43, 0.4);
+.world-tile.ironmine .tile-inner {
+    background: #a0aab4;
 }
 
-.world-tile.monster_dragon {
-    background: rgba(155, 89, 182, 0.15);
-    border-color: rgba(155, 89, 182, 0.5);
+.world-tile.stonequarry .tile-inner {
+    background: #b4bbc0;
 }
 
-.world-tile.player_city {
-    background: rgba(245, 200, 66, 0.15);
-    border-color: var(--gold);
-    border-width: 2px;
+.world-tile.wheat_field .tile-inner {
+    background: #eadd92;
+}
+
+.world-tile.monster_goblin .tile-inner {
+    background: #e5a5a5;
+}
+
+.world-tile.monster_orc .tile-inner {
+    background: #d68d8d;
+}
+
+.world-tile.monster_dragon .tile-inner {
+    background: #b19cd9;
+}
+
+.world-tile.player_city .tile-inner {
+    background: #f3b05a;
+    box-shadow: inset 0 0 10px #fdf3d0;
 }
 
 .world-tile.player_tile {
