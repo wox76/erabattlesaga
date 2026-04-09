@@ -644,20 +644,12 @@ const RESEARCH = {
 // CITY LAYOUT — fixed visual slot positions
 // ---------------------------------------------------------------
 const CITY_SLOTS = [
-  { id: 'slot_castle', x: 44, y: 30, building: 'castle', locked: false },
-  { id: 'slot_lumbermill', x: 10, y: 22, building: null, locked: false },
-  { id: 'slot_foundry', x: 76, y: 22, building: null, locked: false },
-  { id: 'slot_quarry', x: 5, y: 50, building: null, locked: false },
-  { id: 'slot_farm', x: 80, y: 52, building: null, locked: false },
-  { id: 'slot_treasury', x: 25, y: 65, building: null, locked: false },
-  { id: 'slot_barracks', x: 60, y: 63, building: null, locked: false },
-  { id: 'slot_stable', x: 14, y: 78, building: null, locked: false },
-  { id: 'slot_academy', x: 70, y: 78, building: null, locked: false },
-  { id: 'slot_wall', x: 44, y: 87, building: null, locked: false },
-  { id: 'slot_hospital', x: 30, y: 45, building: null, locked: false },
-  { id: 'slot_warehouse', x: 57, y: 45, building: null, locked: false },
-  { id: 'slot_market', x: 44, y: 58, building: null, locked: false },
-  { id: 'slot_forge', x: 34, y: 75, building: null, locked: false },
+  { id: 'slot_castle', building: 'castle', locked: false },
+  ...Array.from({ length: 41 }, (_, i) => ({
+    id: `slot_${i + 1}`,
+    building: null,
+    locked: false
+  }))
 ];
 
 // ---------------------------------------------------------------

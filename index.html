@@ -399,7 +399,10 @@
       init() {
         const raw = localStorage.getItem('tbw_save_v1');
         if (raw) {
-          document.getElementById('load-status').textContent = '✅ Salvataggio pronto';
+          const loaded = JSON.parse(raw);
+          let statusText = '✅ Salvataggio pronto';
+          if (loaded.testingMode) statusText += ' - Modalità soldi/gemme infinite';
+          document.getElementById('load-status').textContent = statusText;
           document.getElementById('btn-start-game').textContent = '▶ Continua Conquista';
 
           const resetBtn = document.createElement('button');

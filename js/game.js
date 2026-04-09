@@ -114,6 +114,21 @@ const Game = {
             if (!loaded.buildings) loaded.buildings = {};
             if (!loaded.marches) loaded.marches = [];
 
+            // Migration for old slot IDs to new grid system
+            const slotMap = {
+                'slot_lumbermill': 'slot_1', 'slot_foundry': 'slot_2', 'slot_quarry': 'slot_3',
+                'slot_farm': 'slot_4', 'slot_treasury': 'slot_5', 'slot_barracks': 'slot_6',
+                'slot_stable': 'slot_7', 'slot_academy': 'slot_8', 'slot_wall': 'slot_9',
+                'slot_hospital': 'slot_10', 'slot_warehouse': 'slot_11', 'slot_market': 'slot_12',
+                'slot_forge': 'slot_13'
+            };
+            for (const oldId in slotMap) {
+                if (loaded.buildings[oldId] && !loaded.buildings[slotMap[oldId]]) {
+                    loaded.buildings[slotMap[oldId]] = loaded.buildings[oldId];
+                    delete loaded.buildings[oldId];
+                }
+            }
+
             this.state = loaded;
         } else {
             this.state = def;
@@ -358,11 +373,13 @@ const Game = {
 
     // ---- Build system ------------------------------------------
     canAfford(cost) {
+        if (this.state.testingMode) return true;
         const r = this.state.resources;
         return Object.entries(cost).every(([res, amt]) => (r[res] || 0) >= amt);
     },
 
     deductCost(cost) {
+        if (this.state.testingMode) return;
         const r = this.state.resources;
         for (const [res, amt] of Object.entries(cost)) {
             r[res] = Math.max(0, (r[res] || 0) - amt);
@@ -440,13 +457,32 @@ const Game = {
         const remSec = (q.finishAt - Date.now()) / 1000;
         const gems = Math.max(1, Math.ceil(remSec / 60));
 
-        if (s.gems < gems) return { ok: false, msg: 'Gemme insufficienti!' };
+        if (!s.testingMode) {
+            if (s.gems < gems) return { ok: false, msg: 'Gemme insufficienti!' };
+            s.gems -= gems;
+        }
 
-        s.gems -= gems;
         const item = s.buildQueue.splice(idx, 1)[0];
         this._completeBuild(item);
         this.emit('buildQueueChanged');
         this.save();
+        return { ok: true };
+    },
+
+    demolishBuilding(slotId) {
+        const s = this.state;
+        const b = s.buildings[slotId];
+        if (!b) return { ok: false, msg: 'Nessun edificio in questo slot.' };
+        if (b.buildingId === 'castle') return { ok: false, msg: 'Il Castello non può essere distrutto!' };
+
+        // Check if building is in queue
+        if (s.buildQueue.some(q => q.slotId === slotId)) {
+            return { ok: false, msg: 'Non puoi distruggere un edificio in costruzione/potenziamento.' };
+        }
+
+        delete s.buildings[slotId];
+        this.save();
+        this.emit('stateChanged');
         return { ok: true };
     },
 
@@ -530,9 +566,11 @@ const Game = {
         const remSec = (q.finishAt - Date.now()) / 1000;
         const gems = Math.max(1, Math.ceil(remSec / 60));
 
-        if (s.gems < gems) return { ok: false, msg: 'Gemme insufficienti!' };
+        if (!s.testingMode) {
+            if (s.gems < gems) return { ok: false, msg: 'Gemme insufficienti!' };
+            s.gems -= gems;
+        }
 
-        s.gems -= gems;
         s.trainQueue.splice(idx, 1);
         this._completeTrain(q);
         this.emit('trainQueueChanged');
@@ -605,9 +643,11 @@ const Game = {
         const remSec = (q.finishAt - Date.now()) / 1000;
         const gems = Math.max(1, Math.ceil(remSec / 60));
 
-        if (s.gems < gems) return { ok: false, msg: 'Gemme insufficienti!' };
+        if (!s.testingMode) {
+            if (s.gems < gems) return { ok: false, msg: 'Gemme insufficienti!' };
+            s.gems -= gems;
+        }
 
-        s.gems -= gems;
         s.researchQueue.splice(idx, 1);
         this._completeResearch(q);
         this.emit('researchQueueChanged');

@@ -338,7 +338,7 @@ const StoreView = {
 
         // Equipment logic
         if (item.tab === 'equipment') {
-            const slotMap = { 'Armi': 'weapon', 'Armature': 'armor', 'Elmi': 'helmet', 'Scudi': 'shield' };
+            const slotMap = { 'Armi': 'weapon', 'Armature': 'armor', 'Elmi': 'helmet', 'Scudi': 'shield', 'Gioielli': 'jewelry' };
             const slot = slotMap[item.category];
             if (slot) {
                 if (!Game.state.hero.inventory) Game.state.hero.inventory = [];

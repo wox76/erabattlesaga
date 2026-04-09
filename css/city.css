@@ -15,8 +15,9 @@
     position: relative;
     width: 100%;
     min-height: 100vh;
-    padding-top: 30px;
-    padding-bottom: 80px;
+    height: auto;
+    padding-top: 20px;
+    padding-bottom: 120px;
     background:
         radial-gradient(ellipse at 50% 70%, #1c3d1c 0%, transparent 60%),
         radial-gradient(ellipse at 50% 50%, #172d50 0%, #0a1628 80%);
@@ -39,12 +40,11 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 45%;
+    height: 100%;
     background: linear-gradient(180deg,
             rgba(28, 61, 28, 0.0) 0%,
-            rgba(28, 61, 28, 0.3) 40%,
-            rgba(20, 45, 20, 0.5) 100%);
-    border-radius: 50% 50% 0 0 / 20% 20% 0 0;
+            rgba(28, 61, 28, 0.2) 20%,
+            rgba(20, 45, 20, 0.4) 100%);
 }
 
 /* ---- Building Slots --------------------------------------- */

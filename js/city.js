@@ -110,13 +110,19 @@ const CityView = {
         const q = Game.state.buildQueue.find(qi => qi.slotId === slotId);
         if (!q) return;
         const remSec = Math.max(0, q.finishAt - Date.now()) / 1000;
-        const gems = Math.max(1, Math.ceil(remSec / 60));
+        let gems = Math.max(1, Math.ceil(remSec / 60));
+        let btnText = `⚡ Completa per ${gems} Gemme`;
+
+        if (Game.state.testingMode) {
+            gems = 0;
+            btnText = `⚡ Completa GRATIS (Testing Mode)`;
+        }
 
         Modal.show('Completamento Istantaneo', `
             <div class="center">
                 <p style="margin-bottom:20px; color:var(--text-muted)">Vuoi completare la costruzione istantaneamente e sbloccare subito i bonus dell'edificio?</p>
                 <button class="btn btn-upgrade" onclick="CityView.confirmInstant('${slotId}')">
-                    ⚡ Completa per ${gems} Gemme
+                    ${btnText}
                 </button>
             </div>
         `);
@@ -198,6 +204,14 @@ const CityView = {
       </div>
       ${upgradeSection}
       ${this.renderManageButton(bData.buildingId)}
+      ${bData.buildingId !== 'castle' 
+        ? `<div class="panel-section" style="border-top:1px solid rgba(224, 74, 47, 0.2); margin-top:20px;">
+             <button class="btn btn-upgrade" style="background:var(--ember); border-color:var(--ember-dark);" 
+               onclick="CityView.doDemolish('${slot.id}')">
+               🗑️ Distruggi Edificio
+             </button>
+           </div>` 
+        : ''}
     `);
     },
 
@@ -282,6 +296,19 @@ const CityView = {
         }
     },
 
+    doDemolish(slotId) {
+        if (confirm('Sei sicuro di voler distruggere questo edificio? Tutti i progressi e i livelli andranno perduti.')) {
+            const res = Game.demolishBuilding(slotId);
+            if (res.ok) {
+                this.closePanel();
+                this.render();
+                this.showToast('Edificio distrutto.', 'info');
+            } else {
+                this.showToast(res.msg, 'error');
+            }
+        }
+    },
+
     showPanel(html) {
         let panel = document.getElementById('city-panel');
         if (!panel) return;
@@ -308,7 +335,7 @@ const CityView = {
             .filter(([, v]) => v > 0)
             .map(([res, amt]) => {
                 const have = Game.state.resources[res] || 0;
-                const ok = have >= amt;
+                const ok = Game.state.testingMode || (have >= amt);
                 return `<span class="cost-item ${ok ? '' : 'cost-missing'}">${icons[res]} ${Game.formatNumber(amt)}</span>`;
             }).join('');
     },

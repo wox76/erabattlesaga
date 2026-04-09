@@ -83,7 +83,8 @@ const ActivityView = {
         const remSec = Math.max(0, item.finishAt - Date.now()) / 1000;
         const totalSec = (item.finishAt - item.startAt) / 1000 || 1;
         const progress = Math.min(100, Math.max(0, ((totalSec - remSec) / totalSec) * 100));
-        const gems = Math.max(1, Math.ceil(remSec / 60));
+        let gems = Math.max(1, Math.ceil(remSec / 60));
+        if (Game.state.testingMode) gems = 0;
 
         const iconHtml = (typeof item.icon === 'string' && item.icon.includes('/'))
             ? `<img src="${item.icon}" class="activity-img" alt="Icon">`
@@ -124,9 +125,10 @@ const ActivityView = {
             if (fill) fill.style.width = progress + '%';
 
             // Update gems cost
-            const gems = Math.max(1, Math.ceil(remSec / 60));
+            let gems = Math.max(1, Math.ceil(remSec / 60));
+            if (Game.state.testingMode) gems = 0;
             const btnSpan = el.querySelector('.ai-speedup span');
-            if (btnSpan) btnSpan.textContent = gems;
+            if (btnSpan) btnSpan.textContent = gems || (Game.state.testingMode ? '0' : gems);
         });
     },
 
